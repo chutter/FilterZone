@@ -15,22 +15,26 @@ Main features of the package:
 
 This package is still in beta testing phase, and more features and expanded functionality will be added in the future. If you find any issues with something not working, or you would like features to be added, go to issues in the top menu bar and submit them. 
 
+
+# Citation
+
 For now, you can cite the R package by linking to this GitHub if you use it. 
 
 
 # Installation
 
-The major dependency for FilterZone is the R package AstralPlane: 
+For the full analysis pipeline, the following programs are needed:
+  1) ASTRAL-III is available on GitHub here: https://github.com/smirarab/ASTRAL
+  2) IQTREE 2, specifically version 2 or higher: http://www.iqtree.org
+  
+Instructions for installation and testing ASTRAL-III and IQTREE 2 are included in the respective documentation.
 
-of course the program ASTRAL-III. This program is Java-based and can be run on any machine that can run Java. 
-
-ASTRAL-III is available on GitHub here: https://github.com/smirarab/ASTRAL
-
-Instructions for installation and testing ASTRAL-III are included therein, and once it is up and running AstralPlane should be functional! 
+The major dependency for FilterZone is the R package AstralPlane: https://github.com/chutter/AstralPlane
 
 The package has two R package dependencies, which are treated as imports (i.e. you need them installed, but library(ape) and library(stringr) not needed: 
   ape (>= 5.0)
   stringr (>= 1.4)
+  data.table (>=1.12)
   
 And to install AstralPlane, you can use the R package devtools. Here are step-by-step instructions for installation:
 
