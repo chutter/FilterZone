@@ -50,6 +50,20 @@ filterGeneTrees = function(filter.summary = NULL,
                            make.polytomy = TRUE,
                            polytomy.limit = 0,
                            remove.node.labels = FALSE) {
+#
+#   filter.summary = filt.summary
+#   alignment.data = align.summary
+#   genetree.folder = dataset.trees
+#   format = "concatenated"
+#   overwrite = FALSE
+#   taxa.remove = NULL
+#   min.trees = 5
+#   min.n.samples = 4
+#   min.sample.prop = NULL
+#   make.polytomy = TRUE
+#   polytomy.limit = 10
+#   remove.node.labels = FALSE
+
 
   #Sets up directory for output
   if (dir.exists("filtered-genetrees-folders") == F){ dir.create("filtered-genetrees-folders") }
@@ -147,10 +161,15 @@ filterGeneTrees = function(filter.summary = NULL,
 
       #Does the polytomy check
       if (make.polytomy == TRUE){
-        #Find and collapse nodes with bl close to 0 from above
-        temp.tree$node.label[temp.tree$node.label == ""] = "100"
-        new.tree = AstralPlane::makePolytomy(tree = temp.tree, polytomy.limit = polytomy.limit)
-      }
+        #Checks for node labels
+        if (length(temp.tree$node.label) == 0) {
+          new.tree = temp.tree
+        } else {
+          #Find and collapse nodes with bl close to 0 from above
+          temp.tree$node.label[temp.tree$node.label == ""] = "100"
+          new.tree = AstralPlane::makePolytomy(tree = temp.tree, polytomy.limit = polytomy.limit)
+        }#end else
+      }#make polytomy end if
 
       if (length(format[format == "concatenated"]) == 1){
         #writes tree to a single file

@@ -25,7 +25,7 @@
 concatenateAlignments = function(alignment.folder = NULL,
                                  file.name = NULL,
                                  output.dir = NULL,
-                                 partition.format = c("raxml", "table")) {
+                                 partition.format = c("raxml", "table", "none")) {
 
   #Gets list of alignments
   align.files = list.files(alignment.folder, full.names = T)
