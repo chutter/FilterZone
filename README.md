@@ -111,7 +111,7 @@ save.name = "test-dataset"
 
 ```
 
-3) Next, read the tree file into R, where the read.tree function from ape works to read in trees from ASTRAL-III. 
+3) Next, read the tree file into R, where the read.tree function from ape works to read in trees from ASTRAL-III. Alternatively, the file path to the tree file can be input directly into the "tree" parameter in the anomalyZone function and the function will read the tree. 
 
 
 ```r
@@ -122,10 +122,18 @@ anom.data = anomalyZone(tree = uce.tree,
 
 ```
 
+Alternatively,
+
+```r
+anom.data = anomalyZone(tree = tree.file,
+                        outgroups = outgroup.taxa)
+
+```
+
 Parameter explanations: 
 
 ```
-tree = tree file from ASTRAL-III read into R as a phylo object 
+tree = tree file from ASTRAL-III read into R as a phylo object or a file path to this tree. 
 outgroups = your outgroup taxa for rooting the tree
 ```
 
@@ -144,7 +152,7 @@ plot.anomalyZone(tree = uce.tree,
 Parameter explanations: 
 
 ```
-tree = tree file from ASTRAL-III read into R as a phylo object 
+tree = tree file from ASTRAL-III read into R as a phylo object or a file path to a tree file
 data = the output data.frame from the anomalyZone function
 outgroups = your outgroup taxa for rooting the tree
 save.file = NULL or blank to not save a file; otherwise file name to save PDF
