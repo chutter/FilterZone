@@ -1,6 +1,6 @@
-#' @title plot.filterCFAZ
+#' @title plot.filterNode
 #'
-#' @description Function for plotting data from concordance factors and the anomaly zone
+#' @description Function for plotting gene tree filtration results for a focal node
 #'
 #' @param anomaly.zone.data table output from the filterAnomalies function
 #'
@@ -39,27 +39,45 @@
 #' @export
 
 
-plot.filterCFAZ = function(anomaly.zone.data = NULL,
+plot.filterZone = function(anomaly.zone.data = NULL,
                            concordance.factors.data = NULL,
                            save.plots = TRUE,
                            output.dir = "Filter-Plots",
-                           focal.node = NULL,
-                           filter.name = c("alignment_length", "count_pis", "proportion_pis", "proportion_sample"),
-                           dataset.name = "all",
+                           dataset.name = NULL,
                            plot.gcf = TRUE,
                            plot.scf = TRUE,
                            az.colors = c("#7BC143", "#DE3293"),
                            m.shape = c(22, 21),
                            min.trees = 10){
+  #Debug
+  # anomaly.zone.data = anomaly.data
+  # concordance.factors.data = concord.data
+  # output.dir = "Filter-Plots"
+  # dataset.name = "100kb_regions"
+  # plot.gcf = TRUE
+  # plot.scf = TRUE
+  # az.colors = c("#7BC143", "#DE3293")
+  # m.shape = c(22, 21)
+  # min.trees = 10
+  # save.plots = TRUE
 
   #nitial checks
-  if (is.null(filter.name) == TRUE){ stop("Error: filter choice in filter.name is needed.")}
-  if (length(filter.name) != 1){ stop("Error: Only 1 filter can be plotted at a time.")}
-  if (is.null(dataset.name) == TRUE){ stop("Error: a dataset name is needed.")}
   if(file.exists(output.dir) == F) { dir.create(output.dir) }
 
   #Start function
-  concord.red = concordance.factors.data[concordance.factors.data$clade %in% focal.node,]
+  if (dataset.name == "all" || is.null(dataset.name) == TRUE){
+    concord.red = concordance.factors.data
+  } else{
+    concord.red = concordance.factors.data[grep(dataset.name, concordance.factors.data$dataset),]
+  }
+  if (nrow(concord.red) == 0){ stop("Error: dataset.name does not exist in data.") }
+
+  #Filters data further
+  anomaly.red = anomaly.zone.data[anomaly.zone.data$no_trees > min.trees,]
+  if (nrow(anomaly.red) == 0){ stop("Error: no datasets greater than set minimum trees value.") }
+  concord.red = concord.red[concord.red$dataset %in% anomaly.red$filter_file,]
+  if (nrow(concord.red) == 0){ stop("Error: no datasets greater than set minimum trees value.") }
+
   filter.datasets = unique(concord.red$dataset)
 
   collect.data = c()
@@ -67,70 +85,80 @@ plot.filterCFAZ = function(anomaly.zone.data = NULL,
 
     temp.a = anomaly.zone.data[anomaly.zone.data$filter_file %in% filter.datasets[x],]
     temp.c = concord.red[concord.red$dataset %in% filter.datasets[x],]
-    mono.p = unique(temp.c$monophyletic)
-    mono.p = mono.p[is.na(mono.p) != T]
-    temp.c = temp.c[temp.c$gCF %in% min(temp.c$gCF),]
-    temp.c$monophyletic = mono.p
 
-    if (length(unique(temp.a$anomaly_zone)) == 1){
-      temp.collect = cbind(temp.c, temp.a[1,])
-      collect.data = rbind(collect.data, temp.collect)
-      next
-    }
+    #Data to collect:
+    #Have: anomaly zone data and concord data for every tree
+    #Summary of trees
+    # - Count AZ
+    # - get average gCF / sCF?
+    # - min, max gCF / sCF
+    # - gather filter information, do this to everything at once?
+    # - gather alignment mean data too
 
-    #Match up anomaly zone or not
-    node.data1 = temp.a[temp.a$parent_node %in% temp.c$node,]
-    node.data2 = temp.a[temp.a$child_node %in% temp.c$node,]
-    node.data3 = temp.a[temp.a$parent_node %in% node.data1$child_node,]
-    node.data = rbind(node.data1, node.data2, node.data3)
+    filter.name = as.character(unique(temp.a$filter_name))
+    #Gets filter value
+    if (filter.name == "alignment_length"){ filter.value = mean(temp.a$filter_length, na.rm = T) }
+    if (filter.name == "count_pis"){ filter.value = mean(temp.a$filter_count_pis, na.rm = T) }
+    if (filter.name == "proportion_pis"){ filter.value = mean(temp.a$filter_prop_pis, na.rm = T) }
+    if (filter.name == "proportion_samples"){ filter.value = mean(temp.a$filter_sample, na.rm = T) }
+    #Gets alignment value
+    if (filter.name == "alignment_length"){ align.value = mean(temp.a$mean_length, na.rm = T) }
+    if (filter.name == "count_pis"){ align.value = mean(temp.a$mean_count_pis, na.rm = T) }
+    if (filter.name == "proportion_pis"){ align.value = mean(temp.a$mean_prop_pis, na.rm = T) }
+    if (filter.name == "proportion_samples"){ align.value = mean(temp.a$mean_sample, na.rm = T) }
 
-    az.data = node.data[node.data$anomaly_zone == 1,]
+    #Summarizes anomaly zone and alignment data
+    az.data = data.frame(dataset = unique(temp.a$align_dataset),
+                         file_name = filter.datasets[x],
+                         filter_name = filter.name,
+                         filter_value = filter.value,
+                         alignment_value = align.value,
+                         no_trees = unique(temp.a$no_trees),
+                         count_AZ = sum(temp.a$anomaly_zone, na.rm = T),
+                         prop_AZ = sum(temp.a$anomaly_zone, na.rm = T)/nrow(temp.a))
 
-    #Picks the best
-    if (nrow(az.data) >= 2){ az.data = az.data[1,] }
-    if (nrow(az.data) == 0){ az.data = node.data[1,] }
+    #Summarizes concordance factors data
+    cf.data = data.frame(mean_gCF = mean(temp.c$gCF, na.rm = T),
+                         min_gCF = min(temp.c$gCF, na.rm = T),
+                         mean_sCF = mean(temp.c$sCF, na.rm = T),
+                         min_sCF = min(temp.c$sCF, na.rm = T),
+                         mean_pp = mean(temp.c$pp1, na.rm = T),
+                         min_pp = min(temp.c$pp1, na.rm = T))
 
-    temp.collect = cbind(temp.c, az.data)
+    temp.collect = cbind(az.data, cf.data)
     collect.data = rbind(collect.data, temp.collect)
 
   }#x loop end
 
   ###################################################
-  #Filters down to the target dataset and filter set
+  #Plots separately
   ###################################################
-  sub.data = collect.data[collect.data$filter_name %in% filter.name,]
 
-  if (filter.name == "alignment_length"){ sub.data$final_filter = sub.data$filter_length }
-  if (filter.name == "count_pis"){ sub.data$final_filter = sub.data$filter_count_pis }
-  if (filter.name == "proportion_pis"){ sub.data$final_filter = sub.data$filter_prop_pis }
-  if (filter.name == "proportion_sample"){ sub.data$final_filter = sub.data$filter_sample }
+  data.names = as.character(unique(collect.data$filter_name))
 
-  if (dataset.name != "all"){
-    sub.data = sub.data[sub.data$align_dataset %in% dataset.name,]
-    dataset.names = dataset.name
-  } else{
-    dataset.names = unique(sub.data$align_dataset)
-  }
-
-  plot.list = vector("list", length(dataset.names))
-  for (x in 1:length(dataset.names)){
-    red.data = sub.data[sub.data$align_dataset %in% dataset.names[x],]
+  plot.list = vector("list", length(data.names))
+  for (x in 1:length(data.names)){
+    red.data = collect.data[collect.data$filter_name %in% data.names[x],]
 
     if (plot.gcf == TRUE){
       plot.data = data.frame(Type = "gCF",
-                             CF = red.data$gCF,
+                             dataset = red.data$dataset,
+                             CF = red.data$mean_gCF,
+                             PP = red.data$mean_pp,
                              Trees = red.data$no_trees,
-                             Filter = red.data$final_filter,
-                             AZ = red.data$anomaly_zone,
-                             M = red.data$monophyletic)
+                             Filter = red.data$filter_value,
+                             Align = red.data$alignment_value,
+                             AZ = red.data$count_AZ)
     }
     if (plot.scf == TRUE){
       plot.data1 = data.frame(Type = "sCF",
-                              CF = red.data$sCF,
+                              dataset = red.data$dataset,
+                              CF = red.data$mean_sCF,
+                              PP = red.data$mean_pp,
                               Trees = red.data$no_trees,
-                              Filter = red.data$final_filter,
-                              AZ = red.data$anomaly_zone,
-                              M = red.data$monophyletic)
+                              Filter = red.data$filter_value,
+                              Align = red.data$alignment_value,
+                              AZ = red.data$count_AZ)
       plot.data = rbind(plot.data, plot.data1)
     }
 
@@ -138,9 +166,8 @@ plot.filterCFAZ = function(anomaly.zone.data = NULL,
     plot.data = plot.data[plot.data$Trees > min.trees,]
     plot.data = plot.data[plot.data$Filter != 0,]
     plot.data = plot.data[is.na(plot.data$CF) != T,]
+    plot.data = plot.data[order(plot.data$Filter),]
     plot.data$Filter = factor(plot.data$Filter)
-    plot.data$M = factor(plot.data$M)
-    plot.data$AZ = factor(plot.data$AZ)
 
     #Sets up colors in case there is just one
     if (length(unique(plot.data$AZ)) == 1){
@@ -153,18 +180,6 @@ plot.filterCFAZ = function(anomaly.zone.data = NULL,
         temp.az.colors = az.colors[1]
       }
     } else {temp.az.colors = az.colors }
-
-    #Sets up shapes in case there is just one
-    if (length(unique(plot.data$M)) == 1){
-
-      if(unique(plot.data$M) == TRUE){
-        temp.m.shape = m.shape[2]
-      }
-
-      if(unique(plot.data$M) == FALSE){
-        temp.m.shape = m.shape[1]
-      }
-    } else { temp.m.shape = m.shape }
 
 
     #Have to display 1 state correctly for each of the four
@@ -184,11 +199,9 @@ plot.filterCFAZ = function(anomaly.zone.data = NULL,
       #End the y limit
 
       #Final one for paper
-      main.plot = ggplot2::ggplot(gcf.plot, ggplot2::aes(x=Filter, y=CF, fill = AZ, shape = M)) +
-        ggplot2::geom_point(ggplot2::aes(color = AZ, shape = M), size = 10, color = "black") +
-        ggplot2::ylim(limits=c(0, best.y)) +
-        ggplot2::scale_shape_manual(values = temp.m.shape) +
-        ggplot2::scale_fill_manual(values=temp.az.colors)
+      main.plot = ggplot2::ggplot(gcf.plot, ggplot2::aes(x=Filter, y=CF, Fill = dataset)) +
+        ggplot2::geom_point(size = 3, ggplot2::aes(color = dataset)) +
+        ggplot2::ylim(limits=c(0, best.y))
 
       main.plot = main.plot +
         ggplot2::theme_minimal() +
@@ -199,9 +212,9 @@ plot.filterCFAZ = function(anomaly.zone.data = NULL,
 
       #Saves the plot
       if(is.null(save.plots) != TRUE) {
-        ggplot2::ggsave(paste0(output.dir, "/GCF_", focal.node, "_", filter.name, "_", dataset.names[x], ".pdf"),
+        ggplot2::ggsave(paste0(output.dir, "/GCF_Filtered_", data.names[x], ".pdf"),
                         width = 8, height = 4, device = "pdf")
-        print(paste0(output.dir, "/GCF_", focal.node, "_", filter.name, "_", dataset.names[x], ".pdf",
+        print(paste0(output.dir, "/GCF_Filtered_", data.names[x], ".pdf",
                      " saved to file!"))
       }#end if
 
@@ -221,11 +234,9 @@ plot.filterCFAZ = function(anomaly.zone.data = NULL,
       #End the y limit
 
       #Final one for paper
-      main.plot = ggplot2::ggplot(scf.plot, ggplot2::aes(x=Filter, y=CF, fill = AZ, shape = M)) +
-        ggplot2::geom_point(ggplot2::aes(color = AZ, shape = M), size = 10, color = "black") +
-        ggplot2::ylim(limits=c(0, best.y)) +
-        ggplot2::scale_shape_manual(values = temp.m.shape) +
-        ggplot2::scale_fill_manual(values= temp.az.colors)
+      main.plot = ggplot2::ggplot(scf.plot, ggplot2::aes(x=Filter, y=CF, Fill = dataset)) +
+        ggplot2::geom_point(size = 3, ggplot2::aes(color = dataset)) +
+        ggplot2::ylim(limits=c(0, best.y))
 
       main.plot = main.plot +
         ggplot2::theme_minimal() +
@@ -233,13 +244,14 @@ plot.filterCFAZ = function(anomaly.zone.data = NULL,
                        panel.grid.minor = ggplot2::element_blank())
 
       main.plot
+
       plot.list[[x]] = main.plot
 
       #Saves the plot
       if(is.null(save.plots) != TRUE) {
-        ggplot2::ggsave(paste0(output.dir, "/SCF_", focal.node, "_", filter.name, "_", dataset.names[x], ".pdf"),
+        ggplot2::ggsave(paste0(output.dir, "/SCF_Filtered_", data.names[x], ".pdf"),
                         width = 8, height = 4, device = "pdf")    }#end if
-      print(paste0(output.dir, "/SCF_", focal.node, "_", filter.name, "_", dataset.names[x], ".pdf",
+      print(paste0(output.dir, "/SCF_Filtered_", data.names[x], ".pdf",
                    " saved to file!"))
     }#end GCF plot
 

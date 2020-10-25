@@ -1,6 +1,6 @@
-#' @title plot.filterCFAZ
+#' @title plot.filterNode
 #'
-#' @description Function for plotting data from concordance factors and the anomaly zone
+#' @description Function for plotting gene tree filtration results for a focal node
 #'
 #' @param anomaly.zone.data table output from the filterAnomalies function
 #'
@@ -39,13 +39,13 @@
 #' @export
 
 
-plot.filterCFAZ = function(anomaly.zone.data = NULL,
+plot.filterNode = function(anomaly.zone.data = NULL,
                            concordance.factors.data = NULL,
                            save.plots = TRUE,
                            output.dir = "Filter-Plots",
                            focal.node = NULL,
                            filter.name = c("alignment_length", "count_pis", "proportion_pis", "proportion_sample"),
-                           dataset.name = "all",
+                           dataset.name = NULL,
                            plot.gcf = TRUE,
                            plot.scf = TRUE,
                            az.colors = c("#7BC143", "#DE3293"),
@@ -53,9 +53,12 @@ plot.filterCFAZ = function(anomaly.zone.data = NULL,
                            min.trees = 10){
 
   #nitial checks
+  if (is.null(dataset.name) == TRUE){ stop("Error: a dataset name is needed.")}
   if (is.null(filter.name) == TRUE){ stop("Error: filter choice in filter.name is needed.")}
   if (length(filter.name) != 1){ stop("Error: Only 1 filter can be plotted at a time.")}
   if (is.null(dataset.name) == TRUE){ stop("Error: a dataset name is needed.")}
+  if (is.null(focal.node) == TRUE){ stop("Error: a focal node is needed.")}
+
   if(file.exists(output.dir) == F) { dir.create(output.dir) }
 
   #Start function

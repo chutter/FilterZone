@@ -24,6 +24,11 @@ filterAnomalies = function(astral.directory = NULL,
                            outgroups = NULL,
                            filter.data = NULL){
 
+  #Input checks
+  if (is.null(astral.directory) == TRUE){ stop("Error: No directory to filtered astral datasets provided.") }
+  if (is.null(outgroups) == TRUE){ stop("Error: Outgroups were not provided.") }
+  if (is.null(filter.data) == TRUE){ stop("Error: No filter summary data provided.") }
+
   #Load in astral data
   astral.files = list.files(astral.directory)
 
@@ -31,7 +36,7 @@ filterAnomalies = function(astral.directory = NULL,
   all.data = data.table()
   for (x in 1:length(astral.files)){
     #Read in tree
-    filt.tree = ape::read.tree(paste0(astral.dir, "/", astral.files[x]) )
+    filt.tree = ape::read.tree(paste0(astral.directory, "/", astral.files[x]) )
     #anomaly zone calculation for this filtered dataset
     anom.data = anomalyZone(tree = filt.tree,
                             outgroups = outgroups,

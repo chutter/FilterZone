@@ -39,6 +39,10 @@ filterSummary = function(alignment.data = NULL,
                          prop.pis.filters = c(0),
                          count.pis.filters = c(0)) {
 
+  if (is.null(alignment.data) == TRUE){ stop("Error: No alignment summary data provided.") }
+  if (is.null(alignment.folder) == TRUE){ stop("Error: No directory of alignments provided.") }
+  if (is.null(dataset.name) == TRUE){ stop("Error: No dataset name provided.") }
+
   #Read in alignment data and set up
   if (length(alignment.data) == 1) {
     alignment.stats = data.table::fread(alignment.data, header = T)
@@ -47,38 +51,38 @@ filterSummary = function(alignment.data = NULL,
   }
 
   filter.summary = c()
-  if (length(filter.length) != 1){
+  if (length(length.filters) != 1){
     filter.summary = rbind(filter.summary,
                            filterStats(data = alignment.stats,
                                        filter.name = "alignment_length",
-                                       filter.values = filter.length,
+                                       filter.values = length.filters,
                                        align.dataset = dataset.name) )
   }#end length
 
   #Sampling
-  if (length(filter.sample) != 1){
+  if (length(sample.filters) != 1){
     filter.summary = rbind(filter.summary,
                            filterStats(data = alignment.stats,
                                        filter.name = "proportion_samples",
-                                       filter.values = filter.sample,
+                                       filter.values = sample.filters,
                                        align.dataset = dataset.name) )
   }#end sample
 
   #Count
-  if (length(filter.count.pis) != 1){
+  if (length(count.pis.filters) != 1){
     filter.summary = rbind(filter.summary,
                            filterStats(data = alignment.stats,
                                        filter.name = "count_pis",
-                                       filter.values = filter.count.pis,
+                                       filter.values = count.pis.filters,
                                        align.dataset = dataset.name) )
   }#end sample
 
   #filter.prop.pis
-  if (length(filter.prop.pis) != 1){
+  if (length(prop.pis.filters) != 1){
     filter.summary = rbind(filter.summary,
                            filterStats(data = alignment.stats,
                                        filter.name = "proportion_pis",
-                                       filter.values = filter.prop.pis,
+                                       filter.values = prop.pis.filters,
                                        align.dataset = dataset.name) )
   }#end sample
 
