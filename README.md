@@ -274,7 +274,7 @@ min.alignments: minimum number of alignments for a filtered set of data
 overwrite: if TRUE overwrites file if it exists; FALSE the dataset is skipped
 ```
 
-5) Now that alignment statistics have been calculated, the filterSummary function can be used to obtain a quick summary of the datasets that will be generated using your selected filters (from above) and the alignment statistics. 
+5) Prior to filtered summary species tree analysis in ASTRAL-III, the next function creates gene tree datasets for each filtered dataset, prepared for input in ASTRAL-III. Each filtered gene tree dataset is concatenated together (or placed in a folder with format = "folder") and saved to a folder called "filtered-genetrees-concatenated" for the concatenated gene trees or "filtered-genetrees-folders" for directories of gene trees for each filtered dataset. 
 
 ```r
 #Make filtered gene trees datasets [5 minutes]
@@ -310,7 +310,7 @@ polytomy.limit: the value at which to collapse a node into a polytomy
 remove.node.labels: strips trees of node labels if downstream analyses give you trouble (not recommended)
 ```
 
-6) Now that alignment statistics have been calculated, the filterSummary function can be used to obtain a quick summary of the datasets that will be generated using your selected filters (from above) and the alignment statistics. 
+6) Finally, the concatenated gene tree dataset can be provided to the astralRunner function, which runs ASTRAL-III for each concatenated set of gene trees from each filtered dataset in the "filtered-genetrees-concatenated" folder. Each summary species tree is saved in the output.dir. 
 
 ```r
 
@@ -352,7 +352,7 @@ astral.dir = "filtered-astral"
 setwd(work.dir)
 ```
 
-where the astral.dir is the directory of filtered astral datasets, saved from the "output.dir" in Step 6 above. 
+where the astral.dir is the directory of filtered astral datasets, saved from the "output.dir" in Step 6 above ("filtered-astral"). 
 
 
 2) Next, an R list object with your clades of interest are needed. Include all taxa in the tree from each clade in each list object position, and name the list to correspond to the desired clade names. An example is show below: 
