@@ -4,9 +4,7 @@ R Package For Detecting the Anomaly and Erroneous Zones and Alignment Filtering 
 
 This R package is for detecting the anomaly and erroneous zone and facilitating alignment and gene tree filtering of large phylogenomic datasets. 
 
-In extreme cases of ILS, it is possible that the most common gene tree topology will not match the true species tree, a phenomenon termed “the anomaly zone” (Degnan & Rosenberg 2006). For species trees in the anomaly zone, concatenation methods can provide strong support for the most common anomalous topology (i.e. anomalous gene trees: “AGTs”) while species tree methods can recover the correct species tree as ILS is into account (Kubatko & Degnan 2007; Liu & Edwards 2009; Linkem et al. 2016). 
-
-To formally address these two distinct problems, we propose a new alternative paradigm that we dub the “erroneous zone” to distinguish species trees detected in the anomaly zone driven by EGTs from the true biological anomaly zone driven by AGTs resulting from ILS. Within the anomaly zone, coalescent theory predicts that AGTs from ILS will drive gene-tree species-tree discordance and provide a deceptive topology from concatenation methods, which should be unavoidable given that ILS is a biological phenomenon (Degnan & Salter 2005; Degnan & Rosenberg 2006). Under the erroneous zone, we predict that EGTs resulting from non-biological properties of alignments (e.g. missing data, informative sites, alignment length) produces discordant EGTs that results in a detectable anomaly zone for the species tree. Initially, the anomaly and erroneous zone appear the same and can be discovered through the anomaly zone calculation (Degnan & Rosenberg 2006), because EGTs can produce discordant topologies that could appear to result from ILS when EGTs are plentiful. 
+In extreme cases of ILS, it is possible that the most common gene tree topology will not match the true species tree, a phenomenon that has been termed “the anomaly zone”. For species trees in the anomaly zone, concatenation methods can provide strong support for the most common anomalous topology (i.e. anomalous gene trees: “AGTs”) while species tree methods can recover the correct species tree as ILS is into account. However, erroneous gene trees ("EGTs") has been shown to lead to erroneous species tree topologies when gene tree estimation error is high. Gene tree estimation error and EGTs leading to an incorrect species tree is termed the “erroneous zone”, which distinguishes species trees detected in the anomaly zone driven by AGTs resulting from ILS. Under the erroneous zone, EGTs resulting from non-biological properties of alignments (e.g. missing data, informative sites, alignment length) produces discordant EGTs from the true species tree, and filtering based on the informativeness of the alignments can lead to more robust species tree estimation. 
 
 Main features of the package:
   1) Testing for anomaly and erroneous zones
@@ -64,7 +62,7 @@ I have included an R script in the main repository with some examples. It is als
 
 1) first install and load the R package. Its a good idea to install new (or check) every time as this package is being updated frequently. 
 
-```
+```r
 devtools::install_github("chutter/AstralPlane")
 library(AstralPlane)
 
@@ -76,7 +74,7 @@ library(FilterZone)
 2) You will want a character variable that includes your full path to the astral and iqtree jar files. NOTE: if you move the astral jar file, you will need to move the lib/ directory along with it, as astral depends on it. 
 
 
-```
+```r
 astral.path = "/usr/local/bin/Astral-5-14/astral.5.14.2.jar"
 iqtree.path = "/usr/local/bin/IQTREE/bin/iqtree2"
 
@@ -84,7 +82,7 @@ iqtree.path = "/usr/local/bin/IQTREE/bin/iqtree2"
 
 3)Setup your working directory and create if necessary
 
-```
+```r
 work.dir = "/Test_FilterZone"
 dir.create(work.dir)
 setwd(work.dir)
@@ -106,7 +104,7 @@ Once you have a species tree, you can import this species tree into R.
 
 2) Create a set of character variables with the path to your tree file. Also indicate your outgroups for rooting the tree. Finally, the save.name is the desired output save name. 
 
-```
+```r
 tree.file = "/Trees/UCEs.tre"
 outgroups = c("Species_A", "Species_B")
 save.name = "test-dataset"
@@ -116,7 +114,7 @@ save.name = "test-dataset"
 3) Next, read the tree file into R, where the read.tree function from ape works to read in trees from ASTRAL-III. 
 
 
-```
+```r
 uce.tree = ape::read.tree(tree.file)
 
 anom.data = anomalyZone(tree = uce.tree,
@@ -133,7 +131,7 @@ outgroups = your outgroup taxa for rooting the tree
 
 4) When you have collected the data for the anomaly zone across the tree, you can view the data.frame that contains the nodes and branches where the anomaly zone was detected. Additionally, you can plot the results on the phylogenetic tree: 
 
-```
+```r
 plot.anomalyZone(tree = uce.tree,
                  data = anom.data,
                  outgroups = outgroup.taxa,
@@ -165,7 +163,7 @@ The anomaly zone occurs when there are extreme cases of ILS and the most common 
 1) To begin, you will first need a folder of alignments in phylip format and a folder of gene trees from IQTREE (other programs will probably work; if not, let me know and I can add them in). Create your working directory first (or use an existing directory). tree.files and align.files link to the gene tree files and alignments that estimated them. The names must match between the genes and alignments (except for the file extension). 
 
 
-```
+```r
 work.dir = "WorkingDirectory"
 tree.files = "WorkingDirectory/gene-trees"
 align.files = "WorkingDirectory/alignments"
@@ -173,7 +171,7 @@ align.files = "WorkingDirectory/alignments"
 
 2) Next, you will want to select your filters to use, tailored to the features of your dataset. Here is an example: 
 
-```
+```r
 filter.length = c(100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
                   1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000,
                   2100, 2200, 2300, 2400, 2500) #number of base pairs
@@ -185,7 +183,7 @@ filter.count.pis = c(10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500) #count
 3) To obtain a table of alignment stats, run the summarizeAlignments function. The inputs are the alignment directory path and the file export name. 
 
 
-```
+```r
 align.summary = summarizeAlignments(alignment.path = align.dir,
                                     file.export = "alignment_stats",
                                     alignment.type = "phylip")
@@ -200,7 +198,7 @@ INSERT
 
 3) Now that alignment statistics have been calculated, the filterSummary function can be used to obtain a quick summary of the datasets that will be generated using your selected filters (from above) and the alignment statistics. 
 
-```
+```r
 filt.summary = filterSummary(alignment.data = align.summary,
                              alignment.folder = align.dir,
                              dataset.name  = "exons",
@@ -221,7 +219,7 @@ INSERT
 
 4) Now that alignment statistics have been calculated, the filterSummary function can be used to obtain a quick summary of the datasets that will be generated using your selected filters (from above) and the alignment statistics. 
 
-```
+```r
 #Make filtered alignments datasets [10 minutes]
 filterAlignments(filter.summary = filt.summary,
                  alignment.data = align.summary,
@@ -241,7 +239,7 @@ INSERT
 
 5) Now that alignment statistics have been calculated, the filterSummary function can be used to obtain a quick summary of the datasets that will be generated using your selected filters (from above) and the alignment statistics. 
 
-```
+```r
 #Make filtered gene trees datasets [5 minutes]
 filterGeneTrees(filter.summary = filt.summary,
                 alignment.data = align.summary,
@@ -267,7 +265,7 @@ INSERT
 
 6) Now that alignment statistics have been calculated, the filterSummary function can be used to obtain a quick summary of the datasets that will be generated using your selected filters (from above) and the alignment statistics. 
 
-```
+```r
 
 #Runs astral across all filtered gene tree sets
 AstralPlane::astralRunner(concat.genetree.folder = "filtered-genetrees-concatenated",
@@ -293,7 +291,7 @@ INSERT
 
 1) Now that alignment and filtration statistics have been calculated and filtered ASTRAL-III trees have been estimated, this collection of data can be analyzed together. First the necessary directory paths are needed:
 
-```
+```r
 work.dir = "WorkingDirectory"
 tree.path = "WorkingDirectory/gene-trees"
 align.path = "WorkingDirectory/alignments"
@@ -306,7 +304,7 @@ where the astral.dir is the directory of filtered astral datasets, saved from th
 
 2) Next, an R list object with your clades of interest are needed. Include all taxa in the tree from each clade in each list object position, and name the list to correspond to the desired clade names. An example is show below: 
 
-```
+```r
 #outgroups
 outgroup.taxa = c("Outgroup_genus_1", "Outgroup_genus_2")
 
@@ -321,7 +319,7 @@ names(taxa.set) = c("node1", "node2", "node3")
 3) Load in the alignment and filtered summary data calculated in the previous section. 
 
 
-```
+```r
 align.summary = read.csv("alignment_summary.csv")
 filt.summary = read.csv("filter_summary.csv")
 
@@ -329,7 +327,7 @@ filt.summary = read.csv("filter_summary.csv")
 
 4) Once the input data is ready, run the filterAnomalies function to collect anomaly and erroneous zone data from all the filtered datasets. This data is calculated across all filtration replicates across all branches and nodes in the tree. 
 
-```
+```r
 anomaly.data = filterAnomalies(astral.directory = astral.dir,
                                outgroups = outgroup.taxa,
                                filter.data = filt.summary)
@@ -344,7 +342,7 @@ INSERT
 
 5) Next, to obtain concordance factors data from the filtered datasets, run the filterAnomalies function. The resulting table will contain the site and gene concordance factors calculated for each node. 
 
-```
+```r
 concord.data = filterConcordance(input.dir = "concordance-factors",
                                  clade.list = taxa.set,
                                  outgroups  = outgroup.taxa,
@@ -361,7 +359,7 @@ INSERT
 6) The results from the previous function can be gleaned from the tables, or plotted out using the plot.filterCFAZ function. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis). In addition, the points will be colored by anomaly zone calculation presence/absence. The shape (circle or square) represents whether the focal clade was monophyletic in that analysis (circle) or not (square). 
 
 
-```
+```r
 #Plot alignment length, node 2
 plot.filterCFAZ(anomaly.zone.data = anomaly.data,
                 concordance.factors.data = concord.data,
