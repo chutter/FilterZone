@@ -162,7 +162,7 @@ node.label.size = size of the node labels, passed to the cex function of ape::no
 ```
 
 
-# Testing the anomaly and erroneous zones across different filtration schemes 
+# Testing the anomaly and erroneous zones across filtration schemes 
 
 # Creating filtered datasets
 
@@ -177,7 +177,7 @@ tree.files = "WorkingDirectory/gene-trees"
 align.files = "WorkingDirectory/alignments"
 ```
 
-2) Next, you will want to select your filters to use, tailored to the features of your dataset. Here is an example: 
+2) Next, you will want to select your filters to use, adjusted to the features of your dataset. Here is an example: 
 
 ```r
 filter.length = c(100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
@@ -188,7 +188,7 @@ filter.prop.pis = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1) #proportion 
 filter.count.pis = c(10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500) #count of pis
 ```
 
-3) To obtain a table of alignment stats, run the summarizeAlignments function. The inputs are the alignment directory path and the file export name. 
+3) To obtain a table of statistics for each alignment, run the summarizeAlignments function. The inputs are the alignment directory path and the file export name. This function is general and can be used for other purposes. 
 
 
 ```r
@@ -200,7 +200,25 @@ align.summary = summarizeAlignments(alignment.path = align.dir,
 Parameter explanations: 
 
 ```
-INSERT
+alignment.path: path to a folder of multiple sequence alignments in phylip format
+file.export: if a name is provided, the table is saved to file
+overwrite: if TRUE overwrites file if it exists; FALSE the dataset is skipped
+dataset.name: a unique name for your dataset. i.e. exons, introns, UCEs
+alignment.type: select the format of the alignment. Phylip is avaialble for now, will be expanded in the future.
+```
+
+The summary table created by the function has the following columns: 
+
+```
+alignment name = the file name of the alignment
+number_samples = number of samples or taxa in the alignment (number of rows) 
+proportion_samples = the proportion of samples in the alignment (number_samples / max samples)
+alignment_length = total number of base pairs long for the alignment
+count_pis = number of parsimony informative sites in the alignment
+proportion_pis = proportion of sites that are informative (count_pis / alignment_length)
+count_missing_bp = total number of bases missing from the alignment matrix
+proportion_missing_bp = proportion of bases missing from the alignment matrix (count_missing_bp / total bp)
+
 ```
 
 
@@ -221,11 +239,18 @@ filt.summary = filterSummary(alignment.data = align.summary,
 Parameter explanations: 
 
 ```
-INSERT
-
+alignment.data: Alignment summary stats calculcated from summarizeAlignments
+alignment.folder: The alignment folder from which the stats were calculated from in alignment.data
+dataset.name: The name of your dataset, where all filtered datasets will be placed in this folder
+file.out: if you wish to save to file, provide a file name for the summary
+overwrite: whether to overwrite an existing dataset
+length.filters: Your selected length filters as a vector of values for the alignment length
+sample.filters: Your selected sampling fraction filters as a vector of values between 0-1
+prop.pis.filters: Your selected parsimony informatives sites filter as a vector of values between 0-1
+count.pis.filters: Your selected parsimony informatives sites filter as a vector of base pair counts
 ```
 
-4) Now that alignment statistics have been calculated, the filterSummary function can be used to obtain a quick summary of the datasets that will be generated using your selected filters (from above) and the alignment statistics. 
+4) After alignment and filtered datasets summary statistics have been calculated, these two can be combined together to create concatenated alignments and parittion files for each filtered dataset. These concatenated alignments can be used in concatenation-based phylogenetics software (e.g. IQTREE, RAXML) to test out the impact of filtering on concatenation analyses. 
 
 ```r
 #Make filtered alignments datasets [10 minutes]
@@ -241,8 +266,12 @@ filterAlignments(filter.summary = filt.summary,
 Parameter explanations: 
 
 ```
-INSERT
-
+filter.summary: summary data file from filterSummary
+alignment.data: summary data file from alignmentSummary
+alignment.folder: folder of alignments to be filtered
+format: save format for alignments
+min.alignments: minimum number of alignments for a filtered set of data
+overwrite: if TRUE overwrites file if it exists; FALSE the dataset is skipped
 ```
 
 5) Now that alignment statistics have been calculated, the filterSummary function can be used to obtain a quick summary of the datasets that will be generated using your selected filters (from above) and the alignment statistics. 
@@ -267,8 +296,18 @@ filterGeneTrees(filter.summary = filt.summary,
 Parameter explanations: 
 
 ```
-INSERT
-
+filter.summary: summary data file from filterSummary
+alignment.data: summary data file from alignmentSummary
+genetree.folder: your target folder of gene trees that correspond to the alignments being filtered
+format: save format for genetrees
+overwrite: if TRUE overwrites file if it exists; FALSE the dataset is skipped
+taxa.remove: species that you would like removed from each gene tree
+min.trees: mimimum number of trees to keep filtered set
+min.n.samples: the minimum number of samples to keep a gene tree
+min.sample.prop: the minimum proportion of samples to keep a gene tree
+make.polytomy: collapses polytomies in the gene trees
+polytomy.limit: the value at which to collapse a node into a polytomy
+remove.node.labels: strips trees of node labels if downstream analyses give you trouble (not recommended)
 ```
 
 6) Now that alignment statistics have been calculated, the filterSummary function can be used to obtain a quick summary of the datasets that will be generated using your selected filters (from above) and the alignment statistics. 
@@ -290,8 +329,14 @@ AstralPlane::astralRunner(concat.genetree.folder = "filtered-genetrees-concatena
 Parameter explanations: 
 
 ```
-INSERT
-
+concat.genetree.folder: a folder of genetree files that are concatenated.
+output.dir: the output directory name for the astral file
+overwrite: overwrite = TRUE to overwrite existing files
+astral.path: the absolute file path to the ASTRAL-III jar file
+astral.t: the ASTRAL-III "t" parameter for different annotations, t = 2 is all annotation
+quiet: TRUE hides the screen output from astral
+multi.thread: TRUE to use Astral-MP multithreading 
+memory: memory value to be passed to java. Should be in "Xg" format, X = an integer
 ```
 
 # Analyzing Filtered Datasets
