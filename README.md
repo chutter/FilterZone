@@ -352,10 +352,10 @@ astral.dir = "filtered-astral"
 setwd(work.dir)
 ```
 
-where the astral.dir is the directory of filtered astral datasets, saved from the "output.dir" in Step 6 above ("filtered-astral"). 
+The working directory "work.dir" is the main project folder. The "astral.dir" is the directory of filtered astral datasets saved in the "output.dir" in Step 6 above ("filtered-astral"). 
 
 
-2) Next, an R list object with your clades of interest are needed. Include all taxa in the tree from each clade in each list object position, and name the list to correspond to the desired clade names. An example is show below: 
+2) The goal of the next step will be to target and obtain results for specific nodes or clades. To pull results from specific clades, first create an R list object. Include all taxa in the tree from each clade in each list object position, and name the list to correspond to the desired clade names. An example is show below: 
 
 ```r
 #outgroups
@@ -389,7 +389,11 @@ anomaly.data = filterAnomalies(astral.directory = astral.dir,
 Parameter explanations: 
 
 ```
-INSERT
+#' @param astral.directory directory of filtered astral results
+#'
+#' @param outgroups outgroups to root your tree
+#'
+#' @param filter.data your master filtered dataset summary stats
 
 ```
 
@@ -398,23 +402,60 @@ INSERT
 ```r
 concord.data = filterConcordance(input.dir = "concordance-factors",
                                  clade.list = taxa.set,
-                                 outgroups  = outgroup.taxa,
-                                 all.data = TRUE)
+                                 outgroups  = outgroup.taxa)
 ```
 
 Parameter explanations: 
 
 ```
-INSERT
+#' @param input.dir summary data file from filterSummary
+#'
+#' @param clade.list a named list of clades of interest to test for concordance factors
+#'
+#' @param outgroups outgroups to root the tree
 
 ```
 
-6) The results from the previous function can be gleaned from the tables, or plotted out using the plot.filterCFAZ function. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis). In addition, the points will be colored by anomaly zone calculation presence/absence. The shape (circle or square) represents whether the focal clade was monophyletic in that analysis (circle) or not (square). 
+6) The results from the previous function can be gleaned from the tables, or plotted out using the plot.filterZone function. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis). In addition, the points will be colored by anomaly zone calculation presence/absence. The shape (circle or square) represents whether the focal clade was monophyletic in that analysis (circle) or not (square). 
+
+
+```r
+plot.filterZone(anomaly.zone.data = anomaly.data,
+                concordance.factors.data = concord.data,
+                save.plots = TRUE,
+                output.dir = "Filter-Plots",
+                dataset.name = "all",
+                plot.gcf = TRUE,
+                plot.scf = TRUE,
+                az.colors = c("#7BC143", "#DE3293"),
+                m.shape = c(22, 21),
+                min.trees = 10)
+```
+
+
+Parameter explanations: 
+
+```
+anomaly.zone.data: table output from the filterAnomalies function
+concordance.factors.data: table output from the filterConcordance function
+save.plots: if you wish to save to file select TRUE
+output.dir: the name of the output directory to save the plots if TRUE above
+filter.name: the filter to plot. Options include: alignment_length, count_pis, proportion_pis, proportion_sample
+dataset.name: from your main sets of data (i.e. exons, introns). All = plots of all them.
+plot.gcf: should the gene concordance factor be plotted?
+plot.scf: should the site concordance factor be plotted?
+az.colors: colors to indicate the anomaly zone. Default: Green: presence; Purple: absence
+m.shape: monophyly shape on the graph; circle = monophyletic; square paraphyletic
+min.trees: minimum number of trees to keep a filtration replicate. Default: 10
+
+```
+
+7) The results from the previous function can be gleaned from the tables, or plotted out using the plot.filterNode function. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis). In addition, the points will be colored by anomaly zone calculation presence/absence. The shape (circle or square) represents whether the focal clade was monophyletic in that analysis (circle) or not (square). 
 
 
 ```r
 #Plot alignment length, node 2
-plot.filterCFAZ(anomaly.zone.data = anomaly.data,
+plot.filterNode(anomaly.zone.data = anomaly.data,
                 concordance.factors.data = concord.data,
                 output.dir = "Filter-Plots",
                 focal.node = "node2",
@@ -431,7 +472,18 @@ plot.filterCFAZ(anomaly.zone.data = anomaly.data,
 Parameter explanations: 
 
 ```
-INSERT
+anomaly.zone.data: table output from the filterAnomalies function
+concordance.factors.data: table output from the filterConcordance function
+save.plots: if you wish to save to file select TRUE
+output.dir: the name of the output directory to save the plots if TRUE above
+focal.node: the node annotated from the filterConcordance function
+filter.name: the filter to plot. Options include: alignment_length, count_pis, proportion_pis, proportion_sample
+dataset.name: from your main sets of data (i.e. exons, introns). All = plots of all them.
+plot.gcf: should the gene concordance factor be plotted?
+plot.scf: should the site concordance factor be plotted?
+az.colors: colors to indicate the anomaly zone. Default: Green: presence; Purple: absence
+m.shape: monophyly shape on the graph; circle = monophyletic; square paraphyletic
+min.trees: minimum number of trees to keep a filtration replicate. Default: 10
 
 ```
 
