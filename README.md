@@ -222,7 +222,7 @@ proportion_missing_bp = proportion of bases missing from the alignment matrix (c
 ```
 
 
-3) Now that alignment statistics have been calculated, the filterSummary function can be used to obtain a quick summary of the datasets that will be generated using your selected filters (from above) and the alignment statistics. 
+4) Now that alignment statistics have been calculated, the filterSummary function can be used to obtain a quick summary of the datasets that will be generated using your selected filters (from above) and the alignment statistics. 
 
 ```r
 filt.summary = filterSummary(alignment.data = align.summary,
@@ -250,7 +250,7 @@ prop.pis.filters: Your selected parsimony informatives sites filter as a vector 
 count.pis.filters: Your selected parsimony informatives sites filter as a vector of base pair counts
 ```
 
-4) After alignment and filtered datasets summary statistics have been calculated, these two can be combined together to create concatenated alignments and parittion files for each filtered dataset. These concatenated alignments can be used in concatenation-based phylogenetics software (e.g. IQTREE, RAXML) to test out the impact of filtering on concatenation analyses. 
+5) After alignment and filtered datasets summary statistics have been calculated, these two can be combined together to create concatenated alignments and parittion files for each filtered dataset. These concatenated alignments can be used in concatenation-based phylogenetics software (e.g. IQTREE, RAXML) to test out the impact of filtering on concatenation analyses. 
 
 ```r
 #Make filtered alignments datasets [10 minutes]
@@ -274,7 +274,7 @@ min.alignments: minimum number of alignments for a filtered set of data
 overwrite: if TRUE overwrites file if it exists; FALSE the dataset is skipped
 ```
 
-5) Prior to filtered summary species tree analysis in ASTRAL-III, the next function creates gene tree datasets for each filtered dataset, prepared for input in ASTRAL-III. Each filtered gene tree dataset is concatenated together (or placed in a folder with format = "folder") and saved to a folder called "filtered-genetrees-concatenated" for the concatenated gene trees or "filtered-genetrees-folders" for directories of gene trees for each filtered dataset. 
+6) Prior to filtered summary species tree analysis in ASTRAL-III, the next function creates gene tree datasets for each filtered dataset, prepared for input in ASTRAL-III. Each filtered gene tree dataset is concatenated together (or placed in a folder with format = "folder") and saved to a folder called "filtered-genetrees-concatenated" for the concatenated gene trees or "filtered-genetrees-folders" for directories of gene trees for each filtered dataset. 
 
 ```r
 #Make filtered gene trees datasets [5 minutes]
@@ -310,7 +310,7 @@ polytomy.limit: the value at which to collapse a node into a polytomy
 remove.node.labels: strips trees of node labels if downstream analyses give you trouble (not recommended)
 ```
 
-6) Finally, the concatenated gene tree dataset can be provided to the astralRunner function, which runs ASTRAL-III for each concatenated set of gene trees from each filtered dataset in the "filtered-genetrees-concatenated" folder. Each summary species tree is saved in the output.dir. 
+7) Finally, the concatenated gene tree dataset can be provided to the astralRunner function, which runs ASTRAL-III for each concatenated set of gene trees from each filtered dataset in the "filtered-genetrees-concatenated" folder. Each summary species tree is saved in the output.dir. 
 
 ```r
 
@@ -342,12 +342,10 @@ memory: memory value to be passed to java. Should be in "Xg" format, X = an inte
 # Analyzing Filtered Datasets
 
 
-1) Now that alignment and filtration statistics have been calculated and filtered ASTRAL-III trees have been estimated, this collection of data can be analyzed together. First the necessary directory paths are needed:
+1) Now that alignment and filtration statistics have been calculated and filtered ASTRAL-III trees have been estimated, this collection of data can be analyzed together. First the necessary directory paths can be put into character vectors:
 
 ```r
 work.dir = "WorkingDirectory"
-tree.path = "WorkingDirectory/gene-trees"
-align.path = "WorkingDirectory/alignments"
 astral.dir = "filtered-astral"
 setwd(work.dir)
 ```
@@ -369,7 +367,7 @@ taxa.set[[3]] = c("Genus_species_1", "Genus_species_2", "Genus_species_3", "Genu
 names(taxa.set) = c("node1", "node2", "node3")
 ```
 
-3) Load in the alignment and filtered summary data calculated in the previous section. 
+3) Load in the alignment and filtered summary data calculated in the previous section using "read.csv". 
 
 
 ```r
@@ -389,15 +387,13 @@ anomaly.data = filterAnomalies(astral.directory = astral.dir,
 Parameter explanations: 
 
 ```
-#' @param astral.directory directory of filtered astral results
-#'
-#' @param outgroups outgroups to root your tree
-#'
-#' @param filter.data your master filtered dataset summary stats
+astral.directory: directory of filtered astral results
+outgroups: outgroups to root your tree
+filter.data: your master filtered dataset summary stats
 
 ```
 
-5) Next, to obtain concordance factors data from the filtered datasets, run the filterAnomalies function. The resulting table will contain the site and gene concordance factors calculated for each node. 
+5) Next, to obtain concordance factors data from the filtered datasets, run the filterConcordance function. The resulting table will contain the site and gene concordance factors calculated for each node across all the filtration replicates. These data.frames from filterAnomalies and filterConcordance can be used for other analyses. 
 
 ```r
 concord.data = filterConcordance(input.dir = "concordance-factors",
@@ -408,15 +404,13 @@ concord.data = filterConcordance(input.dir = "concordance-factors",
 Parameter explanations: 
 
 ```
-#' @param input.dir summary data file from filterSummary
-#'
-#' @param clade.list a named list of clades of interest to test for concordance factors
-#'
-#' @param outgroups outgroups to root the tree
+input.dir: directory of concordance factor data generated from the filtered datasets
+clade.list: a named list of clades of interest to test for concordance factors
+outgroups: outgroups to root the tree
 
 ```
 
-6) The results from the previous function can be gleaned from the tables, or plotted out using the plot.filterZone function. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis). In addition, the points will be colored by anomaly zone calculation presence/absence. The shape (circle or square) represents whether the focal clade was monophyletic in that analysis (circle) or not (square). 
+6) The results from the previous two functions can be summarized from the tables to find the best filtered tree, or plotted out using the plot.filterZone function. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis). In addition, the points will be colored by anomaly zone calculation presence/absence (az.colors parameter). setting dataset.name = "all" will plot all datasets together on the same plot (e.g. exons, introns, UCEs) so that the impact of filtration on concordance factors can be compared across different data types and sets of analyses. 
 
 
 ```r
@@ -450,7 +444,7 @@ min.trees: minimum number of trees to keep a filtration replicate. Default: 10
 
 ```
 
-7) The results from the previous function can be gleaned from the tables, or plotted out using the plot.filterNode function. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis). In addition, the points will be colored by anomaly zone calculation presence/absence. The shape (circle or square) represents whether the focal clade was monophyletic in that analysis (circle) or not (square). 
+7) This next function can summarize the filtration replicates support on a single node at a time. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis) for the given taxon group delimited at the start of the script. In addition, the points will be colored by anomaly zone calculation presence/absence (az.colors parameter). The shape (circle or square) represents whether the focal clade was monophyletic in that analysis (circle) or not (square).
 
 
 ```r
