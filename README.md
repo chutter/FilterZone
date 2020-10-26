@@ -115,8 +115,8 @@ save.name = "test-dataset"
 
 
 ```r
+#Estimated run time: 1 second
 uce.tree = ape::read.tree(tree.file)
-
 anom.data = anomalyZone(tree = uce.tree,
                         outgroups = outgroup.taxa)
 
@@ -125,6 +125,7 @@ anom.data = anomalyZone(tree = uce.tree,
 Alternatively,
 
 ```r
+#Estimated run time: 1 second
 anom.data = anomalyZone(tree = tree.file,
                         outgroups = outgroup.taxa)
 
@@ -140,6 +141,7 @@ outgroups = your outgroup taxa for rooting the tree
 4) When you have collected the data for the anomaly zone across the tree, you can view the data.frame that contains the nodes and branches where the anomaly zone was detected. Additionally, you can plot the results on the phylogenetic tree: 
 
 ```r
+#Estimated run time: 1 second
 plot.anomalyZone(tree = uce.tree,
                  data = anom.data,
                  outgroups = outgroup.taxa,
@@ -192,6 +194,7 @@ filter.count.pis = c(10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500) #count
 
 
 ```r
+#Estimated run time: 30 minutes
 align.summary = summarizeAlignments(alignment.path = align.dir,
                                     file.export = "alignment_stats",
                                     alignment.type = "phylip")
@@ -225,6 +228,7 @@ proportion_missing_bp = proportion of bases missing from the alignment matrix (c
 4) Now that alignment statistics have been calculated, the filterSummary function can be used to obtain a quick summary of the datasets that will be generated using your selected filters (from above) and the alignment statistics. 
 
 ```r
+#Estimated run time: 10 seconds
 filt.summary = filterSummary(alignment.data = align.summary,
                              alignment.folder = align.dir,
                              dataset.name  = "exons",
@@ -253,7 +257,7 @@ count.pis.filters: Your selected parsimony informatives sites filter as a vector
 5) After alignment and filtered datasets summary statistics have been calculated, these two can be combined together to create concatenated alignments and parittion files for each filtered dataset. These concatenated alignments can be used in concatenation-based phylogenetics software (e.g. IQTREE, RAXML) to test out the impact of filtering on concatenation analyses. 
 
 ```r
-#Make filtered alignments datasets [10 minutes]
+#Estimated run time: 10 minutes
 filterAlignments(filter.summary = filt.summary,
                  alignment.data = align.summary,
                  alignment.folder = align.dir,
@@ -277,7 +281,7 @@ overwrite: if TRUE overwrites file if it exists; FALSE the dataset is skipped
 6) Prior to filtered summary species tree analysis in ASTRAL-III, the next function creates gene tree datasets for each filtered dataset, prepared for input in ASTRAL-III. Each filtered gene tree dataset is concatenated together (or placed in a folder with format = "folder") and saved to a folder called "filtered-genetrees-concatenated" for the concatenated gene trees or "filtered-genetrees-folders" for directories of gene trees for each filtered dataset. 
 
 ```r
-#Make filtered gene trees datasets [5 minutes]
+#Estimated run time: 10 minutes
 filterGeneTrees(filter.summary = filt.summary,
                 alignment.data = align.summary,
                 genetree.folder = tree.dir,
@@ -313,8 +317,7 @@ remove.node.labels: strips trees of node labels if downstream analyses give you 
 7) Finally, the concatenated gene tree dataset can be provided to the astralRunner function, which runs ASTRAL-III for each concatenated set of gene trees from each filtered dataset in the "filtered-genetrees-concatenated" folder. Each summary species tree is saved in the output.dir. 
 
 ```r
-
-#Runs astral across all filtered gene tree sets
+#Estimated run time: hours, depending on how many filters selected
 AstralPlane::astralRunner(concat.genetree.folder = "filtered-genetrees-concatenated",
                           output.dir = "filtered-astral",
                           overwrite = TRUE,
@@ -379,6 +382,7 @@ filt.summary = read.csv("filter_summary.csv")
 4) Once the input data is ready, run the filterAnomalies function to collect anomaly and erroneous zone data from all the filtered datasets. This data is calculated across all filtration replicates across all branches and nodes in the tree. 
 
 ```r
+#Estimated run time: 1 minute
 anomaly.data = filterAnomalies(astral.directory = astral.dir,
                                outgroups = outgroup.taxa,
                                filter.data = filt.summary)
@@ -396,6 +400,7 @@ filter.data: your master filtered dataset summary stats
 5) Next, to obtain concordance factors data from the filtered datasets, run the filterConcordance function. The resulting table will contain the site and gene concordance factors calculated for each node across all the filtration replicates. These data.frames from filterAnomalies and filterConcordance can be used for other analyses. 
 
 ```r
+#Estimated run time: 1 minute
 concord.data = filterConcordance(input.dir = "concordance-factors",
                                  clade.list = taxa.set,
                                  outgroups  = outgroup.taxa)
@@ -414,6 +419,7 @@ outgroups: outgroups to root the tree
 
 
 ```r
+#Estimated run time: 1 second
 plot.filterZone(anomaly.zone.data = anomaly.data,
                 concordance.factors.data = concord.data,
                 save.plots = TRUE,
@@ -448,7 +454,7 @@ min.trees: minimum number of trees to keep a filtration replicate. Default: 10
 
 
 ```r
-#Plot alignment length, node 2
+#Estimated run time: 1 second
 plot.filterNode(anomaly.zone.data = anomaly.data,
                 concordance.factors.data = concord.data,
                 output.dir = "Filter-Plots",
