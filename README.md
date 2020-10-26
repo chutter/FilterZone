@@ -77,7 +77,6 @@ library(FilterZone)
 ```r
 astral.path = "/usr/local/bin/Astral-5-14/astral.5.14.2.jar"
 iqtree.path = "/usr/local/bin/IQTREE/bin/iqtree2"
-
 ```
 
 3)Setup your working directory and create if necessary
@@ -108,7 +107,6 @@ Once you have a species tree, you can import this species tree into R.
 tree.file = "/Trees/UCEs.tre"
 outgroups = c("Species_A", "Species_B")
 save.name = "test-dataset"
-
 ```
 
 3) Next, read the tree file into R, where the read.tree function from ape works to read in trees from ASTRAL-III. Alternatively, the file path to the tree file can be input directly into the "tree" parameter in the anomalyZone function and the function will read the tree. 
@@ -119,7 +117,6 @@ save.name = "test-dataset"
 uce.tree = ape::read.tree(tree.file)
 anom.data = anomalyZone(tree = uce.tree,
                         outgroups = outgroup.taxa)
-
 ```
 
 Alternatively,
@@ -128,7 +125,6 @@ Alternatively,
 #Estimated run time: 1 second
 anom.data = anomalyZone(tree = tree.file,
                         outgroups = outgroup.taxa)
-
 ```
 
 Parameter explanations: 
@@ -160,7 +156,6 @@ outgroups = your outgroup taxa for rooting the tree
 save.file = NULL or blank to not save a file; otherwise file name to save PDF
 tip.label.size = size of the tip labels, passed to the cex function of ape::plot
 node.label.size = size of the node labels, passed to the cex function of ape::nodelabels
-
 ```
 
 
@@ -221,7 +216,6 @@ count_pis = number of parsimony informative sites in the alignment
 proportion_pis = proportion of sites that are informative (count_pis / alignment_length)
 count_missing_bp = total number of bases missing from the alignment matrix
 proportion_missing_bp = proportion of bases missing from the alignment matrix (count_missing_bp / total bp)
-
 ```
 
 
@@ -294,7 +288,6 @@ filterGeneTrees(filter.summary = filt.summary,
                 make.polytomy = TRUE,
                 polytomy.limit = 10,
                 remove.node.labels = FALSE)
-
 ```
 
 Parameter explanations: 
@@ -325,8 +318,7 @@ AstralPlane::astralRunner(concat.genetree.folder = "filtered-genetrees-concatena
                           astral.t = 2,
                           quiet = FALSE,
                           multi.thread = TRUE,
-                          memory = "8g")
-                          
+                          memory = "8g")               
 ```
 
 Parameter explanations: 
@@ -376,7 +368,6 @@ names(taxa.set) = c("node1", "node2", "node3")
 ```r
 align.summary = read.csv("alignment_summary.csv")
 filt.summary = read.csv("filter_summary.csv")
-
 ```
 
 4) Once the input data is ready, run the filterAnomalies function to collect anomaly and erroneous zone data from all the filtered datasets. This data is calculated across all filtration replicates across all branches and nodes in the tree. 
@@ -412,7 +403,6 @@ Parameter explanations:
 input.dir: directory of concordance factor data generated from the filtered datasets
 clade.list: a named list of clades of interest to test for concordance factors
 outgroups: outgroups to root the tree
-
 ```
 
 6) The results from the previous two functions can be summarized from the tables to find the best filtered tree, or plotted out using the plot.filterZone function. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis). In addition, the points will be colored by anomaly zone calculation presence/absence (az.colors parameter). setting dataset.name = "all" will plot all datasets together on the same plot (e.g. exons, introns, UCEs) so that the impact of filtration on concordance factors can be compared across different data types and sets of analyses. 
@@ -447,7 +437,6 @@ plot.scf: should the site concordance factor be plotted?
 az.colors: colors to indicate the anomaly zone. Default: Green: presence; Purple: absence
 m.shape: monophyly shape on the graph; circle = monophyletic; square paraphyletic
 min.trees: minimum number of trees to keep a filtration replicate. Default: 10
-
 ```
 
 7) This next function can summarize the filtration replicates support on a single node at a time. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis) for the given taxon group delimited at the start of the script. In addition, the points will be colored by anomaly zone calculation presence/absence (az.colors parameter). The shape (circle or square) represents whether the focal clade was monophyletic in that analysis (circle) or not (square).
@@ -484,7 +473,9 @@ plot.scf: should the site concordance factor be plotted?
 az.colors: colors to indicate the anomaly zone. Default: Green: presence; Purple: absence
 m.shape: monophyly shape on the graph; circle = monophyletic; square paraphyletic
 min.trees: minimum number of trees to keep a filtration replicate. Default: 10
-
 ```
+
+
+
 
 ##### Coming soon: guide for many datasets at once
