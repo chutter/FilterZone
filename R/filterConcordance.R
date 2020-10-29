@@ -2,7 +2,7 @@
 #'
 #' @description Function for obtaining filtered concordance factor data
 #'
-#' @param input.dir summary data file from filterSummary
+#' @param input.dir directory of concordance factor data generated from the filtered datasets
 #'
 #' @param clade.list a named list of clades of interest to test for concordance factors
 #'
@@ -42,7 +42,7 @@ filterConcordance = function(input.dir = NULL,
   for (x in 1:length(cf.files)){
 
     #Reads in the plane data
-    plane.data = AstralPlane::createAstralPlaneCF(cf.file.name = paste0("concordance-factors/", cf.files[x]),
+    plane.data = AstralPlane::createAstralPlaneCF(cf.file.name = paste0(input.dir, "/", cf.files[x]),
                                                   outgroups = outgroups,
                                                   tip.length = 1)
 

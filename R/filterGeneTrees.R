@@ -10,7 +10,7 @@
 #'
 #' @param format save format for genetrees
 #'
-#' @param overwrite overwrite if file exists?
+#' @param overwrite if TRUE overwrites file if it exists; FALSE the dataset is skipped
 #'
 #' @param taxa.remove species that you would like removed from each gene tree
 #'
@@ -20,7 +20,7 @@
 #'
 #' @param min.sample.prop the minimum proportion of samples to keep a gene tree
 #'
-#' @param collapse.polytomy collapses polytomies in the gene trees
+#' @param make.polytomy collapses polytomies in the gene trees
 #'
 #' @param polytomy.limit the value at which to collapse a node into a polytomy
 #'
@@ -42,7 +42,7 @@ filterGeneTrees = function(filter.summary = NULL,
                            alignment.data = NULL,
                            genetree.folder = NULL,
                            format = c("folder", "concatenated"),
-                           overwrite = TRUE,
+                           overwrite = FALSE,
                            taxa.remove = NULL,
                            min.trees = 5,
                            min.n.samples = 4,
@@ -51,39 +51,54 @@ filterGeneTrees = function(filter.summary = NULL,
                            polytomy.limit = 0,
                            remove.node.labels = FALSE) {
 #
-#   filter.summary = filt.summary
-#   alignment.data = align.summary
-#   genetree.folder = dataset.trees
-#   format = "concatenated"
-#   overwrite = FALSE
-#   taxa.remove = NULL
-#   min.trees = 5
-#   min.n.samples = 4
-#   min.sample.prop = NULL
-#   make.polytomy = TRUE
-#   polytomy.limit = 10
-#   remove.node.labels = FALSE
+  # filter.summary = filt.summary
+  # alignment.data = align.summary
+  # genetree.folder = dataset.trees
+  # format = "concatenated"
+  # overwrite = FALSE
+  # taxa.remove = NULL
+  # min.trees = 5
+  # min.n.samples = 4
+  # min.sample.prop = NULL
+  # make.polytomy = TRUE
+  # polytomy.limit = 10
+  # remove.node.labels = FALSE
 
+  if(is.null(alignment.data) == TRUE){ stop("Error: a table of alignment data is needed.") }
+  if(is.null(filter.summary) == TRUE){ stop("Error: a filter.summary file is needed.") }
+  if(is.null(genetree.folder) == TRUE){ stop("Error: a folder of gene trees in genetree.folder is needed.") }
+  if(is.null(format) == TRUE){ stop("Error: an output format (folder or concatenated) is needed.") }
+  if(length(format) != 1){ stop("Error: only one output format can be provided.") }
+  if(min.n.samples <= 3){ stop("Error: too few samples selected. Must be 4 or greater")}
+
+  #Check if files exist or not
+  if (dir.exists(genetree.folder) == F){
+    return(paste0("Directory of geen trees could not be found. Exiting."))
+  }#end file check
 
   #Sets up directory for output
-  if (dir.exists("filtered-genetrees-folders") == F){ dir.create("filtered-genetrees-folders") }
-  #Checks for output directory and creates it if not found
-  if (overwrite == TRUE){
-    if (dir.exists("filtered-genetrees-folders") == T){
-      unlink("filtered-genetrees-folders", recursive = T)
-      dir.create("filtered-genetrees-folders")
-    }#end dir exist
-  }#end overwrite
+  if (format == "folder"){
+    if (dir.exists("filtered-genetrees-folders") == F){ dir.create("filtered-genetrees-folders") }
+    #Checks for output directory and creates it if not found
+    if (overwrite == TRUE){
+      if (dir.exists("filtered-genetrees-folders") == T){
+        unlink("filtered-genetrees-folders", recursive = T)
+        dir.create("filtered-genetrees-folders")
+      }#end dir exist
+    }#end overwrite
+  }#end folder format
 
-  #Sets up directory for output
-  if (dir.exists("filtered-genetrees-concatenated") == F){ dir.create("filtered-genetrees-concatenated") }
-  #Checks for output directory and creates it if not found
-  if (overwrite == TRUE){
-    if (dir.exists("filtered-genetrees-concatenated") == T){
-      unlink("filtered-genetrees-concatenated", recursive = T)
-      dir.create("filtered-genetrees-concatenated")
-    }#end dir exist
-  }#end overwrite
+  if (format == "concatenated"){
+    #Sets up directory for output
+    if (dir.exists("filtered-genetrees-concatenated") == F){ dir.create("filtered-genetrees-concatenated") }
+    #Checks for output directory and creates it if not found
+    if (overwrite == TRUE){
+      if (dir.exists("filtered-genetrees-concatenated") == T){
+        unlink("filtered-genetrees-concatenated", recursive = T)
+        dir.create("filtered-genetrees-concatenated")
+      }#end dir exist
+    }#end overwrite
+  } #end format
 
   #Read in alignment data and set up
   if (length(alignment.data) == 1) {
@@ -103,6 +118,19 @@ filterGeneTrees = function(filter.summary = NULL,
     #Gets filter subset
     temp.filter = filter.summary[y,]
 
+    if (temp.filter$no_trees < min.trees){
+      print(paste0(temp.filter$filter_file, " does not have enough trees. skipping..."))
+      next
+    }#end if
+
+    #overwriting
+    if (overwrite == FALSE){
+        if (file.exists(paste0("filtered-genetrees-concatenated/", temp.filter$filter_file, "_genetrees.tre")) == TRUE){
+          print(paste0(temp.filter$filter_file, "_genetrees.tre already exists and overwrite = FALSE. skipping..."))
+          next
+        }#end file exists
+    }#end overwrite if
+
     #Applies filters
     filt.data = alignment.stats[alignment.stats$alignment_length >= temp.filter$filter_length,]
     filt.data = filt.data[filt.data$proportion_samples >= temp.filter$filter_sample,]
@@ -110,7 +138,7 @@ filterGeneTrees = function(filter.summary = NULL,
     filt.data = filt.data[filt.data$count_pis >= temp.filter$filter_count_pis,]
 
     #skips minimum number of trees for dataset
-    if (nrow(filt.data) <= min.trees){ next }
+    if (nrow(filt.data) < min.trees){ next }
 
     #Obtains list of markers and associated gene trees
     marker.list = filt.data$file
@@ -146,7 +174,7 @@ filterGeneTrees = function(filter.summary = NULL,
 
       #Skips if less than 4 taxa
       if (length(temp.tree$tip.label) < min.n.samples){
-        print(paste0(tree.files[x], " skipped, less than ", min.n.samples, " samples."))
+        #print(paste0(tree.files[x], " skipped, less than ", min.n.samples, " samples."))
         next
       }#end min sample check
 
@@ -170,6 +198,8 @@ filterGeneTrees = function(filter.summary = NULL,
           new.tree = AstralPlane::makePolytomy(tree = temp.tree, polytomy.limit = polytomy.limit)
         }#end else
       }#make polytomy end if
+
+      if (class(new.tree) == "character"){ next }
 
       if (length(format[format == "concatenated"]) == 1){
         #writes tree to a single file

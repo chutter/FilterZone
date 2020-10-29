@@ -24,10 +24,21 @@ anomalyZone = function(tree = NULL,
                        outgroups = NULL,
                        print.node = TRUE) {
 
+  #Parameter checks
   if (is.null(tree) == TRUE){ stop("Error: No phylogenetic tree provided.") }
   if (is.null(outgroups) == TRUE){ stop("Error: No outgroups provided.") }
 
-  spp.tree = ape::unroot(tree)
+  #If imported as a file path
+  if (class(tree) == "character"){
+    spp.tree = ape::read.tree(tree)
+    spp.tree = ape::unroot(spp.tree)
+  }
+
+  #If imported as a tree
+  if (class(tree) == "phylo"){
+    spp.tree = ape::unroot(tree)
+  }
+
   if (ape::is.monophyletic(spp.tree, outgroups) == T){
     spp.tree = ape::root(spp.tree, outgroups, resolve.root = T)
   } else{ spp.tree = ape::root(spp.tree, outgroups[1], resolve.root = T) }

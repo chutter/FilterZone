@@ -6,6 +6,8 @@
 #'
 #' @param file.export give a save name if you wnat to save the summary to file.
 #'
+#' @param overwrite if TRUE overwrites file if it exists; FALSE the dataset is skipped
+#'
 #' @param dataset.name A name for your dataset. i.e. exons, introns, UCEs
 #'
 #' @param alignment.type select the format of the alignment. Phylip is avaialble for now, will be expanded in the future.
@@ -25,11 +27,37 @@
 
 summarizeAlignments = function(alignment.path = NULL,
                                file.export = NULL,
+                               overwrite = FALSE,
                                dataset.name = NULL,
-                               alignment.type = "phylip") {
+                               alignment.format = c("phylip", "nexus")) {
+
+  # alignment.path = dataset.align
+  # dataset.name = datasets[i]
+  # file.export = datasets[i]
+  # alignment.type = "nexus"
+  # overwrite = FALSE
 
   if(is.null(alignment.path) == TRUE){ stop("Error: no alignment path provided.") }
   if(is.null(dataset.name) == TRUE){ stop("Error: a dataset name is needed.") }
+
+  #Check if files exist or not
+  if (dir.exists(alignment.path) == F){
+    return(paste0("Directory of alignments could not be found. Exiting."))
+  }#end file check
+
+  #Overwrite checker
+  if (overwrite == TRUE){
+    if (file.exists(paste0(file.export, ".csv")) == T){
+      #Checks for output directory and creates it if not found
+      system(paste0("rm ", file.export, ".csv"))
+    }#end file exists
+  } else {
+    if (file.exists(paste0(file.export, ".csv")) == T){
+      print(paste0("File exists for ", file.export, " and overwrite = FALSE. Exiting."))
+      save.data = read.csv(paste0(file.export, ".csv"))
+      return(save.data)
+    }#end file check
+  }#end else
 
   #Gets list of alignments from path
   align.names = list.files(alignment.path)
@@ -49,9 +77,13 @@ summarizeAlignments = function(alignment.path = NULL,
   for (x in 1:length(align.names)){
     #Reads in alignment
 
-    if (alignment.type == "phylip"){
+    if (alignment.format == "phylip"){
       align = ape::read.dna(paste0(alignment.path, "/", align.names[x]),
                        format = "sequential")
+    }
+    if (alignment.format == "nexus"){
+      align = ape::read.nexus.data(paste0(alignment.path, "/", align.names[x]))
+      align = ape::as.DNAbin(matrix(unlist(align), ncol = length(align[[1]]), byrow = TRUE))
     }
 
     #Collect data

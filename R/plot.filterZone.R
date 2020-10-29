@@ -61,6 +61,10 @@ plot.filterZone = function(anomaly.zone.data = NULL,
   # min.trees = 10
   # save.plots = TRUE
 
+  if(is.null(anomaly.zone.data) == TRUE){ stop("Error: no anomaly.zone.data provided.") }
+  if(is.null(concordance.factors.data) == TRUE){ stop("Error: no concordance.factors.data provided.") }
+  if(is.null(output.dir) == TRUE){ stop("Error: no output save directory name provided.") }
+
   #nitial checks
   if(file.exists(output.dir) == F) { dir.create(output.dir) }
 

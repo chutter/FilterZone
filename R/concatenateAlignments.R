@@ -27,6 +27,16 @@ concatenateAlignments = function(alignment.folder = NULL,
                                  output.dir = NULL,
                                  partition.format = c("raxml", "table", "none")) {
 
+  #Parameter checks
+  if(is.null(alignment.folder) == TRUE){ stop("Error: a folder of alignments is needed.") }
+  if(is.null(file.name) == TRUE){ stop("Error: an output file name is needed.") }
+  if(is.null(output.dir) == TRUE){ stop("Error: an output directory is needed.") }
+
+  #Check if files exist or not
+  if (dir.exists(alignment.folder) == F){
+    return(paste0("Directory of alignments could not be found. Exiting."))
+  }#end file check
+
   #Gets list of alignments
   align.files = list.files(alignment.folder, full.names = T)
   align.list = lapply(align.files, function (x) fread(x, header = T))

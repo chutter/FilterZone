@@ -12,7 +12,7 @@
 #'
 #' @param min.alignments minimum number of alignments for a filtered set of data
 #'
-#' @param overwrite overwrite if file exists?
+#' @param overwrite if TRUE overwrites file if it exists; FALSE the dataset is skipped
 #'
 #' @return filters the alignments
 #'
@@ -32,7 +32,29 @@ filterAlignments = function(filter.summary = NULL,
                             alignment.folder = NULL,
                             format = c("folder", "concatenated"),
                             min.alignments = 5,
-                            overwrite = TRUE ) {
+                            min.n.samples = 4,
+                            overwrite = FALSE ) {
+
+  filter.summary = filt.summary
+  alignment.data = align.summary
+  alignment.folder = dataset.align
+  format = "concatenated"
+  min.alignments = 5
+  min.n.samples = 4
+  overwrite = FALSE
+
+  #Parameter checks
+  if(is.null(filter.summary) == TRUE){ stop("Error: a filter.summary file is needed.") }
+  if(is.null(alignment.data) == TRUE){ stop("Error: an alignment.data file is needed.") }
+  if(is.null(alignment.folder) == TRUE){ stop("Error: a folder of alignments is needed.") }
+  if(is.null(format) == TRUE){ stop("Error: an output format (folder or concatenated) is needed.") }
+  if(length(format) != 1){ stop("Error: only one output format can be provided.") }
+  if(min.n.samples <= 3){ stop("Error: too few samples selected. Must be 4 or greater")}
+
+  #Check if files exist or not
+  if (dir.exists(alignment.folder) == F){
+    return(paste0("Directory of alignments could not be found. Exiting."))
+  }#end file check
 
   #Sets up directory for output
   if (dir.exists("filtered-alignments") == F){ dir.create("filtered-alignments") }
@@ -68,6 +90,19 @@ filterAlignments = function(filter.summary = NULL,
 
     #Gets filter subset
     temp.filter = filter.summary[x,]
+    #Checks for too few trees
+    if (temp.filter$no_trees < min.alignments){
+      print(paste0(temp.filter$filter_file, " does not have enough trees. skipping..."))
+      next
+    }#end if
+
+    #overwriting
+    if (overwrite == FALSE){
+      if (file.exists(paste0("filtered-alignments-concatenated/", temp.filter$filter_file, ".phy")) == TRUE){
+        print(paste0(temp.filter$filter_file, ".phy already exists and overwrite = FALSE. skipping"))
+        next
+      }#end file exists
+    }#end overwrite if
 
     #Applies filters
     filt.data = alignment.stats[alignment.stats$alignment_length >= temp.filter$filter_length,]
@@ -76,7 +111,7 @@ filterAlignments = function(filter.summary = NULL,
     filt.data = filt.data[filt.data$count_pis >= temp.filter$filter_count_pis,]
 
     #skips minimum number of trees for dataset
-    if (nrow(filt.data) <= min.alignments){ next }
+    if (nrow(filt.data) < min.alignments){ next }
 
     #Obtains list of markers and associated gene trees
     marker.list = filt.data$file
@@ -100,7 +135,7 @@ filterAlignments = function(filter.summary = NULL,
       concatenateAlignments(alignment.folder = paste0("filtered-alignments/", temp.filter$filter_file),
                             file.name = temp.filter$filter_file,
                             output.dir = "filtered-alignments-concatenated",
-                            partition.format = c("raxml", "table"))
+                            partition.format = c("raxml"))
     } #end if
 
     #Deletes folder if not wanting to save

@@ -10,6 +10,8 @@
 #'
 #' @param file.out if you wish to save to file, provide a file name for the summary
 #'
+#' @param overwrite if TRUE overwrites file if it exists; FALSE the dataset is skipped
+#'
 #' @param length.filters Your selected length filters as a vector of values for the alignment length
 #'
 #' @param sample.filters Your selected sampling fraction filters as a vector of values between 0-1
@@ -34,14 +36,33 @@ filterSummary = function(alignment.data = NULL,
                          alignment.folder = NULL,
                          dataset.name = NULL,
                          file.out = NULL,
+                         overwrite = FALSE,
                          length.filters = c(0),
                          sample.filters = c(0),
                          prop.pis.filters = c(0),
                          count.pis.filters = c(0)) {
 
+  #parameter checks
   if (is.null(alignment.data) == TRUE){ stop("Error: No alignment summary data provided.") }
   if (is.null(alignment.folder) == TRUE){ stop("Error: No directory of alignments provided.") }
   if (is.null(dataset.name) == TRUE){ stop("Error: No dataset name provided.") }
+
+  #Check if files exist or not
+  if (dir.exists(alignment.folder) == F){
+    return(paste0("Directory of alignments could not be found. Exiting."))
+  }#end file check
+
+  #Overwrite checker
+  if (overwrite == TRUE){
+    if (file.exists(paste0(file.out, ".csv")) == T){
+      #Checks for output directory and creates it if not found
+      system(paste0("rm ", file.out, ".csv"))
+    }#end file exists
+  } else {
+    if (file.exists(paste0(file.out, ".csv")) == T){
+      return(paste0("File exists for ", file.out, " and overwrite = FALSE. Exiting."))
+    }#end file check
+  }#end else
 
   #Read in alignment data and set up
   if (length(alignment.data) == 1) {

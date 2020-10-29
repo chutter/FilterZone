@@ -42,7 +42,17 @@ plot.anomalyZone = function(tree = NULL,
   if (is.null(data) == TRUE){ stop("Error: No anomaly zone data provided.") }
   if (is.null(outgroups) == TRUE){ stop("Error: No outgroups provided.") }
 
-  tree = ape::unroot(tree)
+  #If imported as a file path
+  if (class(tree) == "character"){
+    tree = ape::read.tree(tree)
+    tree = ape::unroot(tree)
+  }
+
+  #If imported as a tree
+  if (class(tree) == "phylo"){
+    tree = ape::unroot(tree)
+  }
+
   if (ape::is.monophyletic(tree, outgroups) == T){
     tree = ape::root(tree, outgroups, resolve.root = T)
   } else{ tree = ape::root(tree, outgroups[1], resolve.root = T) }

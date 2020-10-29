@@ -30,6 +30,8 @@ filterStats = function(data = NULL,
                        filter.values = NULL,
                        align.dataset = NULL) {
 
+  #Parameter checks
+  if(is.null(data) == TRUE){ stop("Error: no filter data provided.") }
   if (length(filter.name) != 1){ stop("Error: please provide only 1 filter") }
 
   #Gets filtered dataset stats together
