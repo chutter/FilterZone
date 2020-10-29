@@ -77,7 +77,6 @@ library(FilterZone)
 ```r
 astral.path = "/usr/local/bin/Astral-5-14/astral.5.14.2.jar"
 iqtree.path = "/usr/local/bin/IQTREE/bin/iqtree2"
-
 ```
 
 3)Setup your working directory and create if necessary
@@ -108,30 +107,37 @@ Once you have a species tree, you can import this species tree into R.
 tree.file = "/Trees/UCEs.tre"
 outgroups = c("Species_A", "Species_B")
 save.name = "test-dataset"
-
 ```
 
-3) Next, read the tree file into R, where the read.tree function from ape works to read in trees from ASTRAL-III. 
+3) Next, read the tree file into R, where the read.tree function from ape works to read in trees from ASTRAL-III. Alternatively, the file path to the tree file can be input directly into the "tree" parameter in the anomalyZone function and the function will read the tree. 
 
 
 ```r
+#Estimated run time: 1 second
 uce.tree = ape::read.tree(tree.file)
-
 anom.data = anomalyZone(tree = uce.tree,
                         outgroups = outgroup.taxa)
+```
 
+Alternatively,
+
+```r
+#Estimated run time: 1 second
+anom.data = anomalyZone(tree = tree.file,
+                        outgroups = outgroup.taxa)
 ```
 
 Parameter explanations: 
 
 ```
-tree = tree file from ASTRAL-III read into R as a phylo object 
+tree = tree file from ASTRAL-III read into R as a phylo object or a file path to this tree. 
 outgroups = your outgroup taxa for rooting the tree
 ```
 
 4) When you have collected the data for the anomaly zone across the tree, you can view the data.frame that contains the nodes and branches where the anomaly zone was detected. Additionally, you can plot the results on the phylogenetic tree: 
 
 ```r
+#Estimated run time: 1 second
 plot.anomalyZone(tree = uce.tree,
                  data = anom.data,
                  outgroups = outgroup.taxa,
@@ -144,17 +150,16 @@ plot.anomalyZone(tree = uce.tree,
 Parameter explanations: 
 
 ```
-tree = tree file from ASTRAL-III read into R as a phylo object 
+tree = tree file from ASTRAL-III read into R as a phylo object or a file path to a tree file
 data = the output data.frame from the anomalyZone function
 outgroups = your outgroup taxa for rooting the tree
 save.file = NULL or blank to not save a file; otherwise file name to save PDF
 tip.label.size = size of the tip labels, passed to the cex function of ape::plot
 node.label.size = size of the node labels, passed to the cex function of ape::nodelabels
-
 ```
 
 
-# Testing the anomaly and erroneous zones across different filtration schemes 
+# Testing the anomaly and erroneous zones across filtration schemes 
 
 # Creating filtered datasets
 
@@ -169,7 +174,7 @@ tree.files = "WorkingDirectory/gene-trees"
 align.files = "WorkingDirectory/alignments"
 ```
 
-2) Next, you will want to select your filters to use, tailored to the features of your dataset. Here is an example: 
+2) Next, you will want to select your filters to use, adjusted to the features of your dataset. Here is an example: 
 
 ```r
 filter.length = c(100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
@@ -180,10 +185,11 @@ filter.prop.pis = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1) #proportion 
 filter.count.pis = c(10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500) #count of pis
 ```
 
-3) To obtain a table of alignment stats, run the summarizeAlignments function. The inputs are the alignment directory path and the file export name. 
+3) To obtain a table of statistics for each alignment, run the summarizeAlignments function. The inputs are the alignment directory path and the file export name. This function is general and can be used for other purposes. 
 
 
 ```r
+#Estimated run time: 30 minutes
 align.summary = summarizeAlignments(alignment.path = align.dir,
                                     file.export = "alignment_stats",
                                     alignment.type = "phylip")
@@ -192,13 +198,31 @@ align.summary = summarizeAlignments(alignment.path = align.dir,
 Parameter explanations: 
 
 ```
-INSERT
+alignment.path: path to a folder of multiple sequence alignments in phylip format
+file.export: if a name is provided, the table is saved to file
+overwrite: if TRUE overwrites file if it exists; FALSE the dataset is skipped
+dataset.name: a unique name for your dataset. i.e. exons, introns, UCEs
+alignment.type: select the format of the alignment. Phylip is avaialble for now, will be expanded in the future.
+```
+
+The summary table created by the function has the following columns: 
+
+```
+alignment name = the file name of the alignment
+number_samples = number of samples or taxa in the alignment (number of rows) 
+proportion_samples = the proportion of samples in the alignment (number_samples / max samples)
+alignment_length = total number of base pairs long for the alignment
+count_pis = number of parsimony informative sites in the alignment
+proportion_pis = proportion of sites that are informative (count_pis / alignment_length)
+count_missing_bp = total number of bases missing from the alignment matrix
+proportion_missing_bp = proportion of bases missing from the alignment matrix (count_missing_bp / total bp)
 ```
 
 
-3) Now that alignment statistics have been calculated, the filterSummary function can be used to obtain a quick summary of the datasets that will be generated using your selected filters (from above) and the alignment statistics. 
+4) Now that alignment statistics have been calculated, the filterSummary function can be used to obtain a quick summary of the datasets that will be generated using your selected filters (from above) and the alignment statistics. 
 
 ```r
+#Estimated run time: 10 seconds
 filt.summary = filterSummary(alignment.data = align.summary,
                              alignment.folder = align.dir,
                              dataset.name  = "exons",
@@ -213,14 +237,21 @@ filt.summary = filterSummary(alignment.data = align.summary,
 Parameter explanations: 
 
 ```
-INSERT
-
+alignment.data: Alignment summary stats calculcated from summarizeAlignments
+alignment.folder: The alignment folder from which the stats were calculated from in alignment.data
+dataset.name: The name of your dataset, where all filtered datasets will be placed in this folder
+file.out: if you wish to save to file, provide a file name for the summary
+overwrite: whether to overwrite an existing dataset
+length.filters: Your selected length filters as a vector of values for the alignment length
+sample.filters: Your selected sampling fraction filters as a vector of values between 0-1
+prop.pis.filters: Your selected parsimony informatives sites filter as a vector of values between 0-1
+count.pis.filters: Your selected parsimony informatives sites filter as a vector of base pair counts
 ```
 
-4) Now that alignment statistics have been calculated, the filterSummary function can be used to obtain a quick summary of the datasets that will be generated using your selected filters (from above) and the alignment statistics. 
+5) After alignment and filtered datasets summary statistics have been calculated, these two can be combined together to create concatenated alignments and parittion files for each filtered dataset. These concatenated alignments can be used in concatenation-based phylogenetics software (e.g. IQTREE, RAXML) to test out the impact of filtering on concatenation analyses. 
 
 ```r
-#Make filtered alignments datasets [10 minutes]
+#Estimated run time: 10 minutes
 filterAlignments(filter.summary = filt.summary,
                  alignment.data = align.summary,
                  alignment.folder = align.dir,
@@ -233,14 +264,18 @@ filterAlignments(filter.summary = filt.summary,
 Parameter explanations: 
 
 ```
-INSERT
-
+filter.summary: summary data file from filterSummary
+alignment.data: summary data file from alignmentSummary
+alignment.folder: folder of alignments to be filtered
+format: save format for alignments
+min.alignments: minimum number of alignments for a filtered set of data
+overwrite: if TRUE overwrites file if it exists; FALSE the dataset is skipped
 ```
 
-5) Now that alignment statistics have been calculated, the filterSummary function can be used to obtain a quick summary of the datasets that will be generated using your selected filters (from above) and the alignment statistics. 
+6) Prior to filtered summary species tree analysis in ASTRAL-III, the next function creates gene tree datasets for each filtered dataset, prepared for input in ASTRAL-III. Each filtered gene tree dataset is concatenated together (or placed in a folder with format = "folder") and saved to a folder called "filtered-genetrees-concatenated" for the concatenated gene trees or "filtered-genetrees-folders" for directories of gene trees for each filtered dataset. 
 
 ```r
-#Make filtered gene trees datasets [5 minutes]
+#Estimated run time: 10 minutes
 filterGeneTrees(filter.summary = filt.summary,
                 alignment.data = align.summary,
                 genetree.folder = tree.dir,
@@ -253,21 +288,29 @@ filterGeneTrees(filter.summary = filt.summary,
                 make.polytomy = TRUE,
                 polytomy.limit = 10,
                 remove.node.labels = FALSE)
-
 ```
 
 Parameter explanations: 
 
 ```
-INSERT
-
+filter.summary: summary data file from filterSummary
+alignment.data: summary data file from alignmentSummary
+genetree.folder: your target folder of gene trees that correspond to the alignments being filtered
+format: save format for genetrees
+overwrite: if TRUE overwrites file if it exists; FALSE the dataset is skipped
+taxa.remove: species that you would like removed from each gene tree
+min.trees: mimimum number of trees to keep filtered set
+min.n.samples: the minimum number of samples to keep a gene tree
+min.sample.prop: the minimum proportion of samples to keep a gene tree
+make.polytomy: collapses polytomies in the gene trees
+polytomy.limit: the value at which to collapse a node into a polytomy
+remove.node.labels: strips trees of node labels if downstream analyses give you trouble (not recommended)
 ```
 
-6) Now that alignment statistics have been calculated, the filterSummary function can be used to obtain a quick summary of the datasets that will be generated using your selected filters (from above) and the alignment statistics. 
+7) Finally, the concatenated gene tree dataset can be provided to the astralRunner function, which runs ASTRAL-III for each concatenated set of gene trees from each filtered dataset in the "filtered-genetrees-concatenated" folder. Each summary species tree is saved in the output.dir. 
 
 ```r
-
-#Runs astral across all filtered gene tree sets
+#Estimated run time: hours, depending on how many filters selected
 AstralPlane::astralRunner(concat.genetree.folder = "filtered-genetrees-concatenated",
                           output.dir = "filtered-astral",
                           overwrite = TRUE,
@@ -275,34 +318,37 @@ AstralPlane::astralRunner(concat.genetree.folder = "filtered-genetrees-concatena
                           astral.t = 2,
                           quiet = FALSE,
                           multi.thread = TRUE,
-                          memory = "8g")
-                          
+                          memory = "8g")               
 ```
 
 Parameter explanations: 
 
 ```
-INSERT
-
+concat.genetree.folder: a folder of genetree files that are concatenated.
+output.dir: the output directory name for the astral file
+overwrite: overwrite = TRUE to overwrite existing files
+astral.path: the absolute file path to the ASTRAL-III jar file
+astral.t: the ASTRAL-III "t" parameter for different annotations, t = 2 is all annotation
+quiet: TRUE hides the screen output from astral
+multi.thread: TRUE to use Astral-MP multithreading 
+memory: memory value to be passed to java. Should be in "Xg" format, X = an integer
 ```
 
 # Analyzing Filtered Datasets
 
 
-1) Now that alignment and filtration statistics have been calculated and filtered ASTRAL-III trees have been estimated, this collection of data can be analyzed together. First the necessary directory paths are needed:
+1) Now that alignment and filtration statistics have been calculated and filtered ASTRAL-III trees have been estimated, this collection of data can be analyzed together. First the necessary directory paths can be put into character vectors:
 
 ```r
 work.dir = "WorkingDirectory"
-tree.path = "WorkingDirectory/gene-trees"
-align.path = "WorkingDirectory/alignments"
 astral.dir = "filtered-astral"
 setwd(work.dir)
 ```
 
-where the astral.dir is the directory of filtered astral datasets, saved from the "output.dir" in Step 6 above. 
+The working directory "work.dir" is the main project folder. The "astral.dir" is the directory of filtered astral datasets saved in the "output.dir" in Step 6 above ("filtered-astral"). 
 
 
-2) Next, an R list object with your clades of interest are needed. Include all taxa in the tree from each clade in each list object position, and name the list to correspond to the desired clade names. An example is show below: 
+2) The goal of the next step will be to target and obtain results for specific nodes or clades. To pull results from specific clades, first create an R list object. Include all taxa in the tree from each clade in each list object position, and name the list to correspond to the desired clade names. An example is show below: 
 
 ```r
 #outgroups
@@ -316,18 +362,18 @@ taxa.set[[3]] = c("Genus_species_1", "Genus_species_2", "Genus_species_3", "Genu
 names(taxa.set) = c("node1", "node2", "node3")
 ```
 
-3) Load in the alignment and filtered summary data calculated in the previous section. 
+3) Load in the alignment and filtered summary data calculated in the previous section using "read.csv". 
 
 
 ```r
 align.summary = read.csv("alignment_summary.csv")
 filt.summary = read.csv("filter_summary.csv")
-
 ```
 
 4) Once the input data is ready, run the filterAnomalies function to collect anomaly and erroneous zone data from all the filtered datasets. This data is calculated across all filtration replicates across all branches and nodes in the tree. 
 
 ```r
+#Estimated run time: 1 minute
 anomaly.data = filterAnomalies(astral.directory = astral.dir,
                                outgroups = outgroup.taxa,
                                filter.data = filt.summary)
@@ -336,32 +382,69 @@ anomaly.data = filterAnomalies(astral.directory = astral.dir,
 Parameter explanations: 
 
 ```
-INSERT
+astral.directory: directory of filtered astral results
+outgroups: outgroups to root your tree
+filter.data: your master filtered dataset summary stats
 
 ```
 
-5) Next, to obtain concordance factors data from the filtered datasets, run the filterAnomalies function. The resulting table will contain the site and gene concordance factors calculated for each node. 
+5) Next, to obtain concordance factors data from the filtered datasets, run the filterConcordance function. The resulting table will contain the site and gene concordance factors calculated for each node across all the filtration replicates. These data.frames from filterAnomalies and filterConcordance can be used for other analyses. 
 
 ```r
+#Estimated run time: 1 minute
 concord.data = filterConcordance(input.dir = "concordance-factors",
                                  clade.list = taxa.set,
-                                 outgroups  = outgroup.taxa,
-                                 all.data = TRUE)
+                                 outgroups  = outgroup.taxa)
 ```
 
 Parameter explanations: 
 
 ```
-INSERT
-
+input.dir: directory of concordance factor data generated from the filtered datasets
+clade.list: a named list of clades of interest to test for concordance factors
+outgroups: outgroups to root the tree
 ```
 
-6) The results from the previous function can be gleaned from the tables, or plotted out using the plot.filterCFAZ function. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis). In addition, the points will be colored by anomaly zone calculation presence/absence. The shape (circle or square) represents whether the focal clade was monophyletic in that analysis (circle) or not (square). 
+6) The results from the previous two functions can be summarized from the tables to find the best filtered tree, or plotted out using the plot.filterZone function. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis). In addition, the points will be colored by anomaly zone calculation presence/absence (az.colors parameter). setting dataset.name = "all" will plot all datasets together on the same plot (e.g. exons, introns, UCEs) so that the impact of filtration on concordance factors can be compared across different data types and sets of analyses. 
 
 
 ```r
-#Plot alignment length, node 2
-plot.filterCFAZ(anomaly.zone.data = anomaly.data,
+#Estimated run time: 1 second
+plot.filterZone(anomaly.zone.data = anomaly.data,
+                concordance.factors.data = concord.data,
+                save.plots = TRUE,
+                output.dir = "Filter-Plots",
+                dataset.name = "all",
+                plot.gcf = TRUE,
+                plot.scf = TRUE,
+                az.colors = c("#7BC143", "#DE3293"),
+                m.shape = c(22, 21),
+                min.trees = 10)
+```
+
+
+Parameter explanations: 
+
+```
+anomaly.zone.data: table output from the filterAnomalies function
+concordance.factors.data: table output from the filterConcordance function
+save.plots: if you wish to save to file select TRUE
+output.dir: the name of the output directory to save the plots if TRUE above
+filter.name: the filter to plot. Options include: alignment_length, count_pis, proportion_pis, proportion_sample
+dataset.name: from your main sets of data (i.e. exons, introns). All = plots of all them.
+plot.gcf: should the gene concordance factor be plotted?
+plot.scf: should the site concordance factor be plotted?
+az.colors: colors to indicate the anomaly zone. Default: Green: presence; Purple: absence
+m.shape: monophyly shape on the graph; circle = monophyletic; square paraphyletic
+min.trees: minimum number of trees to keep a filtration replicate. Default: 10
+```
+
+7) This next function can summarize the filtration replicates support on a single node at a time. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis) for the given taxon group delimited at the start of the script. In addition, the points will be colored by anomaly zone calculation presence/absence (az.colors parameter). The shape (circle or square) represents whether the focal clade was monophyletic in that analysis (circle) or not (square).
+
+
+```r
+#Estimated run time: 1 second
+plot.filterNode(anomaly.zone.data = anomaly.data,
                 concordance.factors.data = concord.data,
                 output.dir = "Filter-Plots",
                 focal.node = "node2",
@@ -378,8 +461,21 @@ plot.filterCFAZ(anomaly.zone.data = anomaly.data,
 Parameter explanations: 
 
 ```
-INSERT
-
+anomaly.zone.data: table output from the filterAnomalies function
+concordance.factors.data: table output from the filterConcordance function
+save.plots: if you wish to save to file select TRUE
+output.dir: the name of the output directory to save the plots if TRUE above
+focal.node: the node annotated from the filterConcordance function
+filter.name: the filter to plot. Options include: alignment_length, count_pis, proportion_pis, proportion_sample
+dataset.name: from your main sets of data (i.e. exons, introns). All = plots of all them.
+plot.gcf: should the gene concordance factor be plotted?
+plot.scf: should the site concordance factor be plotted?
+az.colors: colors to indicate the anomaly zone. Default: Green: presence; Purple: absence
+m.shape: monophyly shape on the graph; circle = monophyletic; square paraphyletic
+min.trees: minimum number of trees to keep a filtration replicate. Default: 10
 ```
+
+
+
 
 ##### Coming soon: guide for many datasets at once
