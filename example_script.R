@@ -31,10 +31,6 @@ plot.anomalyZone(tree = uce.tree,
                  node.label.size = 1,
                  edge.width = 3)
 
-
-#### ***** ADD DUMMY NUMBER TO OUTGROUPS SO ASTRAL ROOTS PROPERLY
-
-
 ######################################################################################
 ##### Filtering demonstration
 
@@ -57,7 +53,9 @@ filter.count.pis = c(10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500) #count
 #Alignment summary function [20 minutes]
 align.summary = summarizeAlignments(alignment.path = align.dir,
                                     file.export = "Hylidae_Alignment_stats",
-                                    alignment.type = "phylip")
+                                    alignment.format = "phylip",
+                                    dataset.name = "Hylidae",
+                                    overwrite = TRUE)
 
 #Apply filters and create summary table of filters [< 1 min]
 filt.summary = filterSummary(alignment.data = align.summary,
@@ -148,11 +146,68 @@ library(data.table)
 
 #Set up your directories
 align.dir = "/Volumes/Armored/Hylidae/Alignments"
-tree.dir = "/Users/chutter/Dropbox/Research/2_WIP/Hylidae/Trees/Gene_Trees"
+tree.dir = "/Users/chutter/Dropbox/Research/1_Main-Projects/0_Working-Projects/Hylidae/Trees/Gene_Trees"
 work.dir = "/Volumes/Armored/Hylidae/Dataset-filtering"
 astral.path = "/usr/local/bin/Astral-5-14/astral.5.14.2.jar"
 dir.create(work.dir)
 setwd(work.dir)
+
+#If you have many different datasets to set up and run, you can give it the folder
+#of various datasets.
+batchAstral(genetree.datasets = tree.dir,
+            astral.t = 2,
+            output.dir = "test-dataset",
+            min.n.samples = 4,
+            min.sample.prop = 0.1,
+            taxa.remove = NULL,
+            overwrite = TRUE,
+            quiet = F,
+            astral.path = astral.path,
+            make.polytomy = TRUE,
+            polytomy.limit = 10,
+            multi.thread = TRUE,
+            memory = "8g")
+
+#Obtains dataset names
+datasets = list.dirs(tree.dir, full.names = F, recursive = F)
+
+for (i in 1:length(datasets)){
+
+  #Read in the astral data and tree and organize it into different slots
+  dataset.name = paste0("test-dataset/", datasets[i], "_astral.tre")
+  astral.data = createAstralPlane(astral.tree = dataset.name,
+                                  outgroups = outgroups,
+                                  tip.length = 1)
+
+  #Plots the astral data
+  astralProjection(astral.plane = astral.data,
+                   local.posterior = TRUE,
+                   pie.plot = TRUE,
+                   pie.data = "qscore",
+                   save.file = paste0("test-dataset/", datasets[i], ".pdf"),
+                   pie.colors = c("purple", "blue", "green"),
+                   node.color.text = c("white"),
+                   node.color.bg = c("black"),
+                   tip.label.size = 0.75,
+                   pie.chart.size = 1)
+
+  species.tree = ape::read.tree(paste0(astral.dir, "/", astral.trees[i]))
+  anom.data = anomalyZone(tree = species.tree,
+                          outgroups = outgroup.taxa)
+
+  plot.anomalyZone(tree = species.tree,
+                   data = anom.data,
+                   outgroups = outgroup.taxa,
+                   save.file = paste0(out.dir, "/", astral.trees[i],"_anomaly_zone.pdf"),
+                   tip.label.size = 0.4,
+                   node.label.size = 0.3,
+                   edge.width = 2)
+
+}#end i loop
+
+
+##### Filtering demonstration with multi-dataset loop
+#######
 
 #Set up your filters
 filter.length = c(100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
@@ -163,9 +218,9 @@ filter.prop.pis = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1) #proportion 
 filter.count.pis = c(10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500) #count of pis
 
 #Gather datasets
-datasets = list.dirs(path = align.dir, full.names = FALSE)
-datasets = datasets[grep("_trimmed", datasets)]
-datasets = datasets[grep("legacy-markers", datasets, invert = T)]
+datasets = c("all-markers_trimmed", "exon-only_trimmed",
+             "intron-only_trimmed", "legacy-markers_trimmed",
+             "locus-combined", "uce_trimmed")
 
 master.align.summary = data.table()
 master.filt.summary = data.table()
@@ -180,8 +235,9 @@ for (i in 1:length(datasets)){
   #Use datasetalign here
   align.summary = summarizeAlignments(alignment.path = dataset.align,
                                       dataset.name = datasets[i],
-                                      file.export = NULL,
-                                      alignment.type = "phylip")
+                                      file.export = datasets[i],
+                                      alignment.format = "phylip",
+                                      overwrite = FALSE)
 
   #Apply filters and create summary table of filters [< 1 min]
   #Do not want to save a file. Do this at the end.
@@ -201,15 +257,11 @@ for (i in 1:length(datasets)){
                    alignment.folder = dataset.align,
                    format = "concatenated",
                    min.alignments = 5,
+                   min.n.samples = 4,
                    overwrite = FALSE)
 
   #Make filtered gene trees datasets [5 minutes]
   #Use datasetalign here; overwrite = FALSE
-
-  #Gets list of gene trees
-  gene.trees = list.files(dataset.trees)
-
-
   filterGeneTrees(filter.summary = filt.summary,
                   alignment.data = align.summary,
                   genetree.folder = dataset.trees,
@@ -217,7 +269,7 @@ for (i in 1:length(datasets)){
                   overwrite = FALSE,
                   taxa.remove = NULL,
                   min.trees = 5,
-                  min.n.samples = 4,
+                  min.n.samples = 5,
                   min.sample.prop = NULL,
                   make.polytomy = TRUE,
                   polytomy.limit = 10,
@@ -232,7 +284,6 @@ for (i in 1:length(datasets)){
 write.csv(master.align.summary, file = "master_alignment_summary.csv", row.names = F)
 write.csv(master.filt.summary, file = "master_filter_summary.csv", row.names = F)
 
-
 #Runs astral across all filtered gene tree sets
 AstralPlane::astralRunner(concat.genetree.folder = "filtered-genetrees-concatenated",
                           output.dir = "filtered-astral",
@@ -245,13 +296,13 @@ AstralPlane::astralRunner(concat.genetree.folder = "filtered-genetrees-concatena
 
 
 #Concordance factor analysis across all filtered datasets
-concordanceRunner(alignment.dir = paste0(work.dir, "/filtered-alignments-concatenated"),
-                  species.tree.dir = paste0(work.dir, "/", astral.dir),
-                  genetree.dir = paste0(work.dir, "/filtered-genetrees-concatenated"),
-                  output.dir = "concordance-factors",
-                  overwrite = TRUE,
-                  quiet = TRUE,
-                  threads  = 6)
+AstralPlane::concordanceRunner(alignment.dir = paste0(work.dir, "/filtered-alignments-concatenated"),
+                               species.tree.dir = paste0(work.dir, "/filtered-astral"),
+                               genetree.dir = paste0(work.dir, "/filtered-genetrees-concatenated"),
+                               output.dir = "concordance-factors",
+                               overwrite = TRUE,
+                               quiet = TRUE,
+                               threads  = 6)
 
 
 ######################################################################################
@@ -268,7 +319,6 @@ library(data.table)
 
 #Set up your directories
 align.dir = "/Volumes/Armored/Hylidae/Alignments"
-tree.dir = "/Users/chutter/Dropbox/Research/2_WIP/Hylidae/Trees/Gene_Trees"
 work.dir = "/Volumes/Armored/Hylidae/Dataset-filtering"
 astral.dir = "filtered-astral"
 setwd(work.dir)
@@ -299,11 +349,33 @@ anomaly.data = filterAnomalies(astral.directory = astral.dir,
 #Obtains the concordance factors data for all filtered replicates
 concord.data = filterConcordance(input.dir = "concordance-factors",
                                  clade.list = taxa.set,
-                                 outgroups  = outgroup.taxa,
-                                 all.data = TRUE)
+                                 outgroups  = outgroup.taxa)
+
+# General plotting function to get a sense of the results without specific node
+plot.filterZone(anomaly.zone.data = anomaly.data,
+                concordance.factors.data = concord.data,
+                save.plots = TRUE,
+                output.dir = "Filter-Plots",
+                dataset.name = "all",
+                plot.gcf = TRUE,
+                plot.scf = TRUE,
+                az.colors = c("#7BC143", "#DE3293"),
+                m.shape = c(22, 21),
+                min.trees = 10)
+
+#### Pull out best tree
+bestFilterTrees(anomaly.zone.data = anomaly.data,
+                concordance.factors.data = concord.data,
+                output.dir = "best-trees",
+                min.trees = 20,
+                fewest.anomaly.zones = TRUE,
+                highest.gene.cf = TRUE,
+                highest.post.prob = TRUE,
+                all.datasets = TRUE,
+                top.best = 1)
 
 #Plot alignment length, node 2
-plot.filterCFAZ(anomaly.zone.data = anomaly.data,
+plot.filterNode(anomaly.zone.data = anomaly.data,
                 concordance.factors.data = concord.data,
                 output.dir = "Filter-Plots",
                 focal.node = "node2",
@@ -316,7 +388,7 @@ plot.filterCFAZ(anomaly.zone.data = anomaly.data,
                 min.trees = 10 )
 
 #Plot alignment length, node 6
-plot.filterCFAZ(anomaly.zone.data = anomaly.data,
+plot.filterNode(anomaly.zone.data = anomaly.data,
                 concordance.factors.data = concord.data,
                 output.dir = "Filter-Plots",
                 focal.node = "node6",
@@ -329,7 +401,7 @@ plot.filterCFAZ(anomaly.zone.data = anomaly.data,
                 min.trees = 10 )
 
 #Plot count PIS node 2
-plot.filterCFAZ(anomaly.zone.data = anomaly.data,
+plot.filterNode(anomaly.zone.data = anomaly.data,
                 concordance.factors.data = concord.data,
                 output.dir = "Filter-Plots",
                 focal.node = "node2",
@@ -342,7 +414,7 @@ plot.filterCFAZ(anomaly.zone.data = anomaly.data,
                 min.trees = 10 )
 
 #Plot count PIS  node 6
-plot.filterCFAZ(anomaly.zone.data = anomaly.data,
+plot.filterNode(anomaly.zone.data = anomaly.data,
                 concordance.factors.data = concord.data,
                 output.dir = "Filter-Plots",
                 focal.node = "node6",
@@ -353,6 +425,7 @@ plot.filterCFAZ(anomaly.zone.data = anomaly.data,
                 az.colors = c("#7BC143", "#DE3293"),
                 m.shape = c(22, 21),
                 min.trees = 10 )
+
 
 
 ###############################################################################

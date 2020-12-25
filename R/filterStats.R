@@ -6,8 +6,6 @@
 #'
 #' @param filter.name Name of the filter being passed. Only one can be used at a time.
 #'
-#' @param min.alignments minimum number of alignments to keep a filtration scheme
-#'
 #' @param filter.values the filter values for the given scheme
 #'
 #' @param align.dataset select three colors to plot your pie.plot
@@ -26,7 +24,6 @@
 
 filterStats = function(data = NULL,
                        filter.name = c("alignment_length", "count_pis", "proportion_pis", "proportion_samples"),
-                       min.alignments = 5,
                        filter.values = NULL,
                        align.dataset = NULL) {
 
@@ -104,7 +101,7 @@ filterStats = function(data = NULL,
     set(collect.data, i = as.integer(x), j = match("filter_name", header.data), value = filter.name )
     set(collect.data, i = as.integer(x), j = match("no_trees", header.data), value = nrow(filt.data) )
 
-    if (nrow(filt.data) < min.alignments){ next }
+    if (nrow(filt.data) == 0){ next }
 
     set(collect.data, i = as.integer(x), j = match("mean_length", header.data), value = mean(filt.data$alignment_length) )
     set(collect.data, i = as.integer(x), j = match("mean_sample", header.data), value = mean(filt.data$proportion_samples) )

@@ -136,6 +136,7 @@ filterGeneTrees = function(filter.summary = NULL,
     filt.data = filt.data[filt.data$proportion_samples >= temp.filter$filter_sample,]
     filt.data = filt.data[filt.data$proportion_pis >= temp.filter$filter_prop_pis,]
     filt.data = filt.data[filt.data$count_pis >= temp.filter$filter_count_pis,]
+    filt.data = filt.data[filt.data$number_samples >= min.n.samples,]
 
     #skips minimum number of trees for dataset
     if (nrow(filt.data) < min.trees){ next }

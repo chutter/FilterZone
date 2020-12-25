@@ -22,23 +22,24 @@
 #' @export
 
 
-concatenateAlignments = function(alignment.folder = NULL,
+concatenateAlignments = function(alignment.path = NULL,
+                                 alignment.names = NULL,
                                  file.name = NULL,
                                  output.dir = NULL,
                                  partition.format = c("raxml", "table", "none")) {
 
-  #Parameter checks
-  if(is.null(alignment.folder) == TRUE){ stop("Error: a folder of alignments is needed.") }
-  if(is.null(file.name) == TRUE){ stop("Error: an output file name is needed.") }
-  if(is.null(output.dir) == TRUE){ stop("Error: an output directory is needed.") }
-
-  #Check if files exist or not
-  if (dir.exists(alignment.folder) == F){
-    return(paste0("Directory of alignments could not be found. Exiting."))
-  }#end file check
+  # alignment.path = align.dir
+  #  alignment.names = cluster.files
+  # file.name = paste0("uce-cluster-", cluster.names[i])
+  #  output.dir = paste0(save.dir, "/100kb_regions")
+  # partition.format = "none"
 
   #Gets list of alignments
-  align.files = list.files(alignment.folder, full.names = T)
+  align.files = list.files(alignment.path, full.names = T)
+  align.files = align.files[gsub(".*\\/", "", align.files) %in% alignment.names]
+
+  if (length(align.files) != length(alignment.names)){ stop("Not all alignment names provided are in the alignment folder.")}
+
   align.list = lapply(align.files, function (x) fread(x, header = T))
   sample.names = unique(unlist(lapply(align.list, function (x) x[,1])))
   sample.names = sample.names[order(sample.names)]
@@ -58,7 +59,7 @@ concatenateAlignments = function(alignment.folder = NULL,
   #For the concatenated alignment
   concat.headers = c("Sample", names(align.list))
   concat.data = data.table(matrix(as.character("n"), nrow = length(sample.names),
-                            ncol = length(concat.headers)))
+                                  ncol = length(concat.headers)))
   setnames(concat.data, concat.headers)
   concat.data[, Sample:=as.character(sample.names)]
 
@@ -87,6 +88,7 @@ concatenateAlignments = function(alignment.folder = NULL,
     } #end if
 
     align = align[order(align$Sample),]
+    concat.data = concat.data[order(concat.data$Sample),]
 
     set(concat.data, i = match(concat.data$Sample, align$Sample),
         j = as.integer(x), value = align$Sequence)
@@ -119,7 +121,7 @@ concatenateAlignments = function(alignment.folder = NULL,
   }#end x
 
   #Concatenated each sample into 1 sequence and write it to file as a text file
- # cat(phy, sep = "\n")
+  # cat(phy, sep = "\n")
   #write(phy, file = file)
 
   if (file.exists(paste0(output.dir, "/", file.name, ".phy")) == TRUE){

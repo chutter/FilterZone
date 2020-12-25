@@ -1,4 +1,4 @@
-#' @title plot.filterNode
+#' @title plot.filterZone
 #'
 #' @description Function for plotting gene tree filtration results for a focal node
 #'
@@ -46,6 +46,7 @@ plot.filterZone = function(anomaly.zone.data = NULL,
                            dataset.name = NULL,
                            plot.gcf = TRUE,
                            plot.scf = TRUE,
+                           plot.pp = TRUE,
                            az.colors = c("#7BC143", "#DE3293"),
                            m.shape = c(22, 21),
                            min.trees = 10){
@@ -166,6 +167,18 @@ plot.filterZone = function(anomaly.zone.data = NULL,
       plot.data = rbind(plot.data, plot.data1)
     }
 
+    if (plot.pp == TRUE){
+      plot.data1 = data.frame(Type = "pp",
+                              dataset = red.data$dataset,
+                              CF = red.data$mean_sCF,
+                              PP = red.data$mean_pp,
+                              Trees = red.data$no_trees,
+                              Filter = red.data$filter_value,
+                              Align = red.data$alignment_value,
+                              AZ = red.data$count_AZ)
+      plot.data = rbind(plot.data, plot.data1)
+    }
+
     #plot.data = rbind(plot1.data, plot2.data)
     plot.data = plot.data[plot.data$Trees > min.trees,]
     plot.data = plot.data[plot.data$Filter != 0,]
@@ -256,6 +269,41 @@ plot.filterZone = function(anomaly.zone.data = NULL,
         ggplot2::ggsave(paste0(output.dir, "/SCF_Filtered_", data.names[x], ".pdf"),
                         width = 8, height = 4, device = "pdf")    }#end if
       print(paste0(output.dir, "/SCF_Filtered_", data.names[x], ".pdf",
+                   " saved to file!"))
+    }#end GCF plot
+
+    #Plot site concordance factor
+    if (plot.pp == TRUE){
+      pp.plot = plot.data[plot.data$Type == "pp",]
+
+      #Getst the best y limit
+      best.y = signif(max(pp.plot$PP), digits = 0)
+      if (best.y >= .8){
+        best.y = best.y + 1
+        #If greater than 100
+        if(best.y >= 1){ best.y = 1 }
+      } else { best.y = .8 }
+      #End the y limit
+
+      #Final one for paper
+      main.plot = ggplot2::ggplot(pp.plot, ggplot2::aes(x=Filter, y=PP, Fill = dataset)) +
+        ggplot2::geom_point(size = 3, ggplot2::aes(color = dataset)) +
+        ggplot2::ylim(limits=c(0, best.y))
+
+      main.plot = main.plot +
+        ggplot2::theme_minimal() +
+        ggplot2::theme(legend.title = ggplot2::element_blank(),
+                       panel.grid.minor = ggplot2::element_blank())
+
+      main.plot
+
+      plot.list[[x]] = main.plot
+
+      #Saves the plot
+      if(is.null(save.plots) != TRUE) {
+        ggplot2::ggsave(paste0(output.dir, "/PP_Filtered_", data.names[x], ".pdf"),
+                        width = 8, height = 4, device = "pdf")    }#end if
+      print(paste0(output.dir, "/PP_Filtered_", data.names[x], ".pdf",
                    " saved to file!"))
     }#end GCF plot
 

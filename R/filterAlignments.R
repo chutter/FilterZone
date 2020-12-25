@@ -35,20 +35,19 @@ filterAlignments = function(filter.summary = NULL,
                             min.n.samples = 4,
                             overwrite = FALSE ) {
 
-  filter.summary = filt.summary
-  alignment.data = align.summary
-  alignment.folder = dataset.align
-  format = "concatenated"
-  min.alignments = 5
-  min.n.samples = 4
-  overwrite = FALSE
+  # filter.summary = filt.summary
+  # alignment.data = align.summary
+  # alignment.folder = dataset.align
+  # format = c("concatenated", "folder")
+  # min.alignments = 5
+  # min.n.samples = 5
+  # overwrite = FALSE
 
   #Parameter checks
   if(is.null(filter.summary) == TRUE){ stop("Error: a filter.summary file is needed.") }
   if(is.null(alignment.data) == TRUE){ stop("Error: an alignment.data file is needed.") }
   if(is.null(alignment.folder) == TRUE){ stop("Error: a folder of alignments is needed.") }
   if(is.null(format) == TRUE){ stop("Error: an output format (folder or concatenated) is needed.") }
-  if(length(format) != 1){ stop("Error: only one output format can be provided.") }
   if(min.n.samples <= 3){ stop("Error: too few samples selected. Must be 4 or greater")}
 
   #Check if files exist or not
@@ -57,14 +56,18 @@ filterAlignments = function(filter.summary = NULL,
   }#end file check
 
   #Sets up directory for output
-  if (dir.exists("filtered-alignments") == F){ dir.create("filtered-alignments") }
-  #Checks for output directory and creates it if not found
-  if (overwrite == TRUE){
-    if (dir.exists("filtered-alignments") == T){
-      unlink("filtered-alignments", recursive = T)
-      dir.create("filtered-alignments")
-    }#end dir exist
-  }#end overwrite
+  #Deletes folder if not wanting to save
+  if (length(format[format == "folder"]) == 1){
+    #Checks if it exists
+    if (dir.exists("filtered-alignments") == F){ dir.create("filtered-alignments") }
+    #Checks for output directory and creates it if not found
+    if (overwrite == TRUE){
+      if (dir.exists("filtered-alignments") == T){
+        unlink("filtered-alignments", recursive = T)
+        dir.create("filtered-alignments")
+      }#end dir exist
+    }#end overwrite
+  }#end folder if
 
   #Sets up directory for output
   if (dir.exists("filtered-alignments-concatenated") == F){ dir.create("filtered-alignments-concatenated") }
@@ -109,6 +112,7 @@ filterAlignments = function(filter.summary = NULL,
     filt.data = filt.data[filt.data$proportion_samples >= temp.filter$filter_sample,]
     filt.data = filt.data[filt.data$proportion_pis >= temp.filter$filter_prop_pis,]
     filt.data = filt.data[filt.data$count_pis >= temp.filter$filter_count_pis,]
+    filt.data = filt.data[filt.data$number_samples >= min.n.samples,]
 
     #skips minimum number of trees for dataset
     if (nrow(filt.data) < min.alignments){ next }
@@ -118,40 +122,32 @@ filterAlignments = function(filter.summary = NULL,
     marker.list = gsub("\\..*", "", marker.list)
     align.files = alignment.files[gsub("\\..*", "", alignment.files) %in% marker.list]
 
-    #Save foldername as dataset name
-    dir.create(paste0("filtered-alignments/", temp.filter$filter_file))
-
-    #Loops through and places trees
-    for (y in 1:length(align.files)){
-
-      #Save foldername as dataset name
-        system(paste0("cp ", alignment.folder, "/", align.files[y],
-                      " filtered-alignments/", temp.filter$filter_file))
-
-    }#end y loop for each alignment within filtered dataset
-
     #Deletes folder if not wanting to save
     if (length(format[format == "concatenated"]) == 1){
-      concatenateAlignments(alignment.folder = paste0("filtered-alignments/", temp.filter$filter_file),
+      concatenateAlignments(alignment.path = alignment.folder,
+                            alignment.names = align.files,
                             file.name = temp.filter$filter_file,
                             output.dir = "filtered-alignments-concatenated",
                             partition.format = c("raxml"))
     } #end if
 
     #Deletes folder if not wanting to save
-    if (length(format[format == "folder"]) == 0){
-      system(paste0("rm -r filtered-alignments/", temp.filter$filter_file))
+    if (length(format[format == "folder"]) == 1){
+      #Save foldername as dataset name
+      dir.create(paste0("filtered-alignments/", temp.filter$filter_file))
+
+      #Loops through and places trees
+      for (y in 1:length(align.files)){
+        #Save foldername as dataset name
+          system(paste0("cp ", alignment.folder, "/", align.files[y],
+                        " filtered-alignments/", temp.filter$filter_file))
+      }#end y loop for each alignment within filtered dataset
     }
 
     print(paste0(temp.filter$filter_file, " complete!"))
 
 
   }#end x loop for each filtered dataset
-
-  #Deletes folder if not wanting to save
-  if (length(format[format == "folder"]) == 0){
-    system("rm -r filtered-alignments/")
-  }
 
 }#end function
 

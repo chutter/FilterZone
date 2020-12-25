@@ -21,7 +21,9 @@
 #' @export
 
 #Calculates informative sites
-informativeSites = function(alignment = NULL, count = TRUE, ambiguities = TRUE) {
+informativeSites = function(alignment = NULL,
+                            count = TRUE,
+                            ambiguities = TRUE) {
 
   #Helper function to use with apply
   column.pars = function(x) {
