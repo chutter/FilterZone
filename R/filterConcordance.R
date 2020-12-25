@@ -27,10 +27,9 @@ filterConcordance = function(input.dir = NULL,
                              outgroups = NULL) {
 
   #Debug
-  # input.dir = "concordance-factors"
-  # clade.list = NULL
-  # outgroups  = outgroup.taxa
-  # all.data = TRUE
+   input.dir = "concordance-factors"
+   clade.list = taxa.set
+   outgroups  = outgroup.taxa
 
   if (is.null(input.dir) == TRUE){ stop("Error: No input directory provided.") }
   if (is.null(outgroups) == TRUE){ stop("Error: No outgroups provided.") }

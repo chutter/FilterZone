@@ -12,9 +12,10 @@ library(data.table)
 
 ######################################################################################
 ##### Testing the anomaly zone
-
-tree.file = "/Users/chutter/Dropbox/Research/3_Finished-Submitted/Chan_etal_Rhacophoridae/Trees_Alignments/astral_unf_uce.tre"
-outgroup.taxa = "Scaphiophryne_marmorata_CRH920"
+work.dir = "/Volumes/Armored/Hylidae/Dataset-single"
+astral.path = "/usr/local/bin/Astral-5-14/astral.5.14.2.jar"
+dir.create(work.dir)
+setwd(work.dir)
 
 tree.file = "/Users/chutter/Dropbox/Research/1_Main-Projects/0_Working-Projects/Hylidae/Trees/Tree_Grid/Unfiltered/Astral/uce.tre"
 outgroup.taxa = c("Phyllomedusa_tomopterna_WED_55506", "Nyctimystes_infrafrenatus_SLT_771")
@@ -36,8 +37,7 @@ plot.anomalyZone(tree = uce.tree,
 
 #Set up your directories
 align.dir = "/Volumes/Armored/Hylidae/Alignments/all-markers_trimmed"
-tree.dir = "/Users/chutter/Dropbox/Research/2_WIP/Hylidae/Trees/Gene_Trees/all-markers_trimmed"
-work.dir = "/Volumes/Armored/Hylidae/Dataset-filtering"
+tree.dir = "/Users/chutter/Dropbox/Research/1_Main-Projects/0_Working-Projects/Hylidae/Trees/Gene_Trees/all-markers_trimmed"
 astral.path = "/usr/local/bin/Astral-5-14/astral.5.14.2.jar"
 dir.create(work.dir)
 setwd(work.dir)
@@ -60,12 +60,13 @@ align.summary = summarizeAlignments(alignment.path = align.dir,
 #Apply filters and create summary table of filters [< 1 min]
 filt.summary = filterSummary(alignment.data = align.summary,
                              alignment.folder = align.dir,
-                             dataset.name  = "unpartitioned",
+                             dataset.name  = "Hylidae",
                              file.out = "filter_summary",
                              length.filters = filter.length,
                              sample.filters = filter.sample,
                              prop.pis.filters = filter.prop.pis,
-                             count.pis.filters = filter.count.pis)
+                             count.pis.filters = filter.count.pis,
+                             overwrite = T)
 
 #Make filtered alignments datasets [10 minutes]
 filterAlignments(filter.summary = filt.summary,
@@ -92,21 +93,29 @@ filterGeneTrees(filter.summary = filt.summary,
 #Runs astral across all filtered gene tree sets
 AstralPlane::astralRunner(concat.genetree.folder = "filtered-genetrees-concatenated",
                           output.dir = "filtered-Astral",
-                          overwrite = TRUE,
+                          overwrite = FALSE,
                           astral.path = astral.path,
                           astral.t = 2,
                           quiet = FALSE,
                           multi.thread = TRUE,
                           memory = "8g")
 
+#Concordance factor analysis across all filtered datasets
+AstralPlane::concordanceRunner(alignment.dir = "filtered-alignments-concatenated",
+                               species.tree.dir = "filtered-Astral",
+                               genetree.dir = "filtered-genetrees-concatenated",
+                               output.dir = "concordance-factors",
+                               overwrite = FALSE,
+                               quiet = TRUE,
+                               threads  = 6)
+
 ######################################################################################
-##### Analyze data all together
+##### Testing the effectiveness of the anomaly zone
 
 #Set up your directories
+work.dir = "/Volumes/Armored/Hylidae/Dataset-single"
 align.dir = "/Volumes/Armored/Hylidae/Alignments/all-markers_trimmed"
-tree.dir = "/Users/chutter/Dropbox/Research/2_WIP/Hylidae/Trees/Gene_Trees/all-markers_trimmed"
-work.dir = "/Volumes/Armored/Hylidae/Dataset-filtering"
-astral.dir = "filtered-Astral"
+tree.dir = "/Users/chutter/Dropbox/Research/1_Main-Projects/0_Working-Projects/Hylidae/Trees/Gene_Trees/all-markers_trimmed"
 setwd(work.dir)
 
 align.summary = read.csv("Hylidae_Alignment_stats.csv")
@@ -122,15 +131,68 @@ taxa.set[[4]] = c("Scarthyla_goinorum_WED_58246" , "Lysapsus_laevis_CAS_257655",
 taxa.set[[5]] = c("Dendropsophus_leucophyllatus_WED_59288", "Dendropsophus_parviceps_MZUTI_1357", "Dendropsophus_koechlini_WED_57879")
 taxa.set[[6]] = c("Plectrohyla_quecchi_MVZ_251534" , "Ptychohyla_salvadorensis_EBG_518","Smilisca_phaeota_LAC_2299",
                   "Hyla_sarda_WED_54544", "Hyla_walkeri_MVZ_263408", "Dryophtes_cinerea_WED_56355")
-taxa.set[[7]] = c("Acris_blanchardi_DSM_2012", "Pseudacris_triseriata_BLO_006","Hyliola_cadaverina_WED_54461")
-names(taxa.set) = c("node1", "node2", "node3", "node4", "node5", "node6", "node7")
+#taxa.set[[7]] = c("Acris_blanchardi_DSM_2012", "Pseudacris_triseriata_BLO_006","Hyliola_cadaverina_WED_54461")
+names(taxa.set) = c("node1", "node2", "node3", "node4", "node5", "node6")
 
 
 #### Function start
-combined.data = filterAnomalies(astral.directory = astral.dir,
+anomaly.data = filterAnomalies(astral.directory = "filtered-Astral",
                                 outgroups = outgroup.taxa,
                                 filter.data = filt.summary)
 
+#Obtains the concordance factors data for all filtered replicates
+concord.data = filterConcordance(input.dir = "concordance-factors",
+                                 clade.list = taxa.set,
+                                 outgroups  = outgroup.taxa)
+
+#### Pull out best tree
+bestFilterTrees(anomaly.zone.data = anomaly.data,
+                concordance.factors.data = concord.data,
+                output.dir = "best-trees",
+                min.trees = 20,
+                fewest.anomaly.zones = TRUE,
+                highest.gene.cf = TRUE,
+                highest.post.prob = TRUE,
+                all.datasets = TRUE,
+                top.best = 1)
+
+# General plotting function to get a sense of the results without specific node
+plot.filterZone(anomaly.zone.data = anomaly.data,
+                concordance.factors.data = concord.data,
+                save.plots = TRUE,
+                output.dir = "Filter-Plots",
+                dataset.name = "all",
+                plot.gcf = TRUE,
+                plot.scf = TRUE,
+                az.colors = c("#7BC143", "#DE3293"),
+                m.shape = c(22, 21),
+                min.trees = 10)
+
+#Plot alignment length, node 2
+plot.filterNode(anomaly.zone.data = anomaly.data,
+                concordance.factors.data = concord.data,
+                output.dir = "Filter-Plots",
+                focal.node = "node2",
+                filter.name = "alignment_length",
+                dataset.name = "all",
+                plot.gcf = TRUE,
+                plot.scf = TRUE,
+                az.colors = c("#7BC143", "#DE3293"),
+                m.shape = c(22, 21),
+                min.trees = 10 )
+
+#Plot alignment length, node 6
+plot.filterNode(anomaly.zone.data = anomaly.data,
+                concordance.factors.data = concord.data,
+                output.dir = "Filter-Plots",
+                focal.node = "node6",
+                filter.name = "alignment_length",
+                dataset.name = "all",
+                plot.gcf = TRUE,
+                plot.scf = TRUE,
+                az.colors = c("#7BC143", "#DE3293"),
+                m.shape = c(22, 21),
+                min.trees = 10 )
 
 ######################################################################################
 ######################################################################################
