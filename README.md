@@ -475,11 +475,10 @@ min.trees: minimum number of trees to keep a filtration replicate. Default: 10
 ## 6) Plot filtering anomaly zone results
 
 
-6) The results from the previous two functions can be summarized from the tables to find the best filtered tree, or plotted out using the plot.filterZone function. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis). In addition, the points will be colored by anomaly zone calculation presence/absence (az.colors parameter). setting dataset.name = "all" will plot all datasets together on the same plot (e.g. exons, introns, UCEs) so that the impact of filtration on concordance factors can be compared across different data types and sets of analyses. 
+1) The results from the previous two functions can be summarized from the tables to find the best filtered tree, or plotted out using the plot.filterZone function. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis). In addition, the points will be colored by anomaly zone calculation presence/absence (az.colors parameter). setting dataset.name = "all" will plot all datasets together on the same plot (e.g. exons, introns, UCEs) so that the impact of filtration on concordance factors can be compared across different data types and sets of analyses. 
 
 
 ```r
-#Estimated run time: 1 second
 plot.filterZone(anomaly.zone.data = anomaly.data,
                 concordance.factors.data = concord.data,
                 save.plots = TRUE,
@@ -509,11 +508,13 @@ m.shape: monophyly shape on the graph; circle = monophyletic; square paraphyleti
 min.trees: minimum number of trees to keep a filtration replicate. Default: 10
 ```
 
-7) This next function can summarize the filtration replicates support on a single node at a time. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis) for the given taxon group delimited at the start of the script. In addition, the points will be colored by anomaly zone calculation presence/absence (az.colors parameter). The shape (circle or square) represents whether the focal clade was monophyletic in that analysis (circle) or not (square).
+![](/pics/filterzone-example.svg)
+
+
+2) This next function can summarize the filtration replicates support on a single node at a time. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis) for the given taxon group delimited at the start of the script. In addition, the points will be colored by anomaly zone calculation presence/absence (az.colors parameter). The shape (circle or square) represents whether the focal clade was monophyletic in that analysis (circle) or not (square).
 
 
 ```r
-#Estimated run time: 1 second
 plot.filterNode(anomaly.zone.data = anomaly.data,
                 concordance.factors.data = concord.data,
                 output.dir = "Filter-Plots",
@@ -545,6 +546,7 @@ m.shape: monophyly shape on the graph; circle = monophyletic; square paraphyleti
 min.trees: minimum number of trees to keep a filtration replicate. Default: 10
 ```
 
+![](/pics/filternode-example.svg)
 
 
 
