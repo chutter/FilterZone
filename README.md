@@ -159,7 +159,7 @@ node.label.size = size of the node labels, passed to the cex function of ape::no
 ```
 
 
-# Testing the anomaly and erroneous zones across filtration schemes 
+# Testing the anomaly zones across filtration schemes 
 
 # Creating filtered datasets
 
