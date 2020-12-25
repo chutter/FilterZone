@@ -1,6 +1,6 @@
 # FilterZone
 
-## R Package For Detecting the Anomaly and Erroneous Zones and Alignment Filtering in Large Phylogenomic Datasets
+## R Package For Detecting the Anomaly Zone and Alignment Filtering in Large Phylogenomic Datasets
 
 ![](/pics/header-plot.svg)
 
