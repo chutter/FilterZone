@@ -1,10 +1,9 @@
 # FilterZone
 
-R Package For Detecting the Anomaly and Erroneous Zones and Alignment Filtering in Large Phylogenomic Datasets
+## R Package For Detecting the Anomaly and Erroneous Zones and Alignment Filtering in Large Phylogenomic Datasets
 
 ![](/pics/header-plot.svg)
 
-This R package is for detecting the anomaly zone and facilitating alignment and gene tree filtering of large phylogenomic datasets. 
 
 In extreme cases of ILS, it is possible that the most common gene tree topology will not match the true species tree, a phenomenon that has been termed “the anomaly zone”. For species trees in the anomaly zone, concatenation methods can provide strong support for the most common anomalous topology (i.e. anomalous gene trees: “AGTs”) while species tree methods can recover the correct species tree as ILS is into account. However, erroneous gene trees ("EGTs") has been shown to lead to erroneous species tree topologies when gene tree estimation error is high. EGTs resulting from non-biological properties of alignments (e.g. missing data, informative sites, alignment length) produces discordant EGTs from the true species tree, and filtering based on the informativeness of the alignments can lead to more robust species tree estimation (Hutter and Duellman, in review). 
 
@@ -37,7 +36,7 @@ For now, you can cite the R package by linking to this GitHub if you use it.
 6) Plot filtering anomaly zone results
 
 
-# 1) Installation
+## 1) Installation
 
 For the full analysis pipeline, the following programs are needed:
   1) ASTRAL-III is available on GitHub here: https://github.com/smirarab/ASTRAL
@@ -69,7 +68,7 @@ And installation should be complete.
 
 
 
-# 2) Setting up R environment
+## 2) Setting up R environment
 
 I have included an R script in the main repository with some examples. It is also described here in detail. 
 
@@ -102,7 +101,7 @@ setwd(work.dir)
 ```
 
 
-# 3) Detecting the anomaly zone
+## 3) Detecting the anomaly zone
 
 1) To detect the anomaly zone, you need a species tree estimated with coalescent branch lengths, where ASTRAL-III will provide this for you. As input into ASTRAL-III, you will need gene trees estimated separately for each alignment marker in your dataset. The R package AstralPlane provides some R functions that will streamline your data analysis pipeline:
   a. alignment and gene concatenation
@@ -173,7 +172,7 @@ node.label.size = size of the node labels, passed to the cex function of ape::no
 ![](/pics/az-example-plot.svg)
 
 
-# 4) Alignment and genetree dataset filtration 
+## 4) Alignment and genetree dataset filtration 
 
 The anomaly zone occurs when there are extreme cases of ILS and the most common gene tree topology does not match the true species tree. Species tree methods are designed to take into account ILS, however, they were not designed to take gene tree estimation error into account. A recent study this package was designed for dubbed the "erroneous zone", where common gene tree estimation error can estimate an incorrect species tree while concatenation provides the correct topology (Hutter & Duellman, in review). The erroneous zone can be detected and avoided through extensive filtration of the alignments and resulting gene trees prior to phylogeny estimation using concatenation and summary species tree method. If the species tree is within the erroneous zone, after filtration of EGTs the anomaly zone will not be detected; however, under ILS AGTs are expected to occur randomly and filtration would have no impact on the detection of the anomaly zone. The results of this study are critically important to systematists, because it could provide clarity on why species tree methods provide different results than concatenation methods. 
 
@@ -347,7 +346,7 @@ memory: memory value to be passed to java. Should be in "Xg" format, X = an inte
 ```
 
 
-# 5) Testing effectiveness of filtering on anomaly zone
+## 5) Testing effectiveness of filtering on anomaly zone
 
 1) Now that alignment and filtration statistics have been calculated and filtered ASTRAL-III trees have been estimated, this collection of data can be analyzed together. First the necessary directory paths can be put into character vectors:
 
@@ -418,7 +417,7 @@ outgroups: outgroups to root the tree
 ```
 
 
-# 6) Plot filtering anomaly zone results
+## 6) Plot filtering anomaly zone results
 
 
 6) The results from the previous two functions can be summarized from the tables to find the best filtered tree, or plotted out using the plot.filterZone function. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis). In addition, the points will be colored by anomaly zone calculation presence/absence (az.colors parameter). setting dataset.name = "all" will plot all datasets together on the same plot (e.g. exons, introns, UCEs) so that the impact of filtration on concordance factors can be compared across different data types and sets of analyses. 
