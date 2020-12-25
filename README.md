@@ -23,7 +23,17 @@ This package is still in beta testing phase, and more features and expanded func
 For now, you can cite the R package by linking to this GitHub if you use it. 
 
 
-# Installation
+# Contents
+
+1) Installation
+2) Setting up R environment
+3) Testing the anomaly zone
+4) Alignment and genetree dataset filtration 
+5) Testing effectiveness of filtering on anomaly zone
+6) Plot filtering anomaly zone results
+
+
+# 1) Installation
 
 For the full analysis pipeline, the following programs are needed:
   1) ASTRAL-III is available on GitHub here: https://github.com/smirarab/ASTRAL
@@ -41,24 +51,23 @@ The package has two additional R package dependencies, which are treated as impo
   
 To install FilterZone, you can use the R package devtools. Here are step-by-step instructions for installation:
 
-1) Install devtools by typing "install.packages(devtools)" in your R console. 
+1) Install devtools by typing in your R console: install.packages("devtools")
 
-2) Install AstralPlane by typing in your R console: "devtools::install_github("chutter/AstralPlane")"
+2) Install AstralPlane by typing in your R console: devtools::install_github("chutter/AstralPlane")
 
 3) Devtools will ask you to install the package dependecies (ape and stringr), select "Yes". If devtools asks you to update packages, you may choose to do so. I would recommend not to install packages from source if devtools asks you. Ape is problemic from source and I could not get it to install on my machine. If devtools is still giving you trouble, you can install the dependencies with "install.packages(c("ape", "stringr"))". Then rerun Step 2 and skip package updates. 
 
-4) Install FilterZone by typing in your R console: "devtools::install_github("chutter/FilterZone")" and repeat Step 3. 
+4) Install FilterZone by typing in your R console: devtools::install_github("chutter/FilterZone"), and repeat Step 3. 
 
 5) Devtools should finish and say the packages loaded properly. Load the package with library(AstralPlane) and library(FilterZone). 
 
 And installation should be complete. 
 
 
-# Mini-Vignette
+
+# 2) Setting up R environment
 
 I have included an R script in the main repository with some examples. It is also described here in detail. 
-
-# Setting up R environment and file paths 
 
 1) first install and load the R package. Its a good idea to install new (or check) every time as this package is being updated frequently. 
 
@@ -88,7 +97,7 @@ setwd(work.dir)
 ```
 
 
-# Testing the anomaly zone on a species tree
+# 3) Testing the anomaly zone
 
 1) To test the anomaly zone, you need a species tree estimated with coalescent branch lengths, where ASTRAL-III will provide this for you. As input into ASTRAL-III, you will need gene trees estimated separately for each alignment marker in your dataset. The R package AstralPlane provides some R functions that will streamline your data analysis pipeline:
   a. alignment and gene concatenation
@@ -113,7 +122,6 @@ save.name = "test-dataset"
 
 
 ```r
-#Estimated run time: 1 second
 uce.tree = ape::read.tree(tree.file)
 anom.data = anomalyZone(tree = uce.tree,
                         outgroups = outgroup.taxa)
@@ -122,14 +130,13 @@ anom.data = anomalyZone(tree = uce.tree,
 Alternatively,
 
 ```r
-#Estimated run time: 1 second
 anom.data = anomalyZone(tree = tree.file,
                         outgroups = outgroup.taxa)
 ```
 
 Parameter explanations: 
 
-```
+```r
 tree = tree file from ASTRAL-III read into R as a phylo object or a file path to this tree. 
 outgroups = your outgroup taxa for rooting the tree
 ```
@@ -149,7 +156,7 @@ plot.anomalyZone(tree = uce.tree,
 
 Parameter explanations: 
 
-```
+```r
 tree = tree file from ASTRAL-III read into R as a phylo object or a file path to a tree file
 data = the output data.frame from the anomalyZone function
 outgroups = your outgroup taxa for rooting the tree
@@ -159,9 +166,7 @@ node.label.size = size of the node labels, passed to the cex function of ape::no
 ```
 
 
-# Testing the anomaly zones across filtration schemes 
-
-# Creating filtered datasets
+# 4) Alignment and genetree dataset filtration 
 
 The anomaly zone occurs when there are extreme cases of ILS and the most common gene tree topology does not match the true species tree. Species tree methods are designed to take into account ILS, however, they were not designed to take gene tree estimation error into account. A recent study this package was designed for dubbed the "erroneous zone", where common gene tree estimation error can estimate an incorrect species tree while concatenation provides the correct topology (Hutter & Duellman, in review). The erroneous zone can be detected and avoided through extensive filtration of the alignments and resulting gene trees prior to phylogeny estimation using concatenation and summary species tree method. If the species tree is within the erroneous zone, after filtration of EGTs the anomaly zone will not be detected; however, under ILS AGTs are expected to occur randomly and filtration would have no impact on the detection of the anomaly zone. The results of this study are critically important to systematists, because it could provide clarity on why species tree methods provide different results than concatenation methods. 
 
@@ -236,7 +241,7 @@ filt.summary = filterSummary(alignment.data = align.summary,
 
 Parameter explanations: 
 
-```
+```r
 alignment.data: Alignment summary stats calculcated from summarizeAlignments
 alignment.folder: The alignment folder from which the stats were calculated from in alignment.data
 dataset.name: The name of your dataset, where all filtered datasets will be placed in this folder
@@ -263,7 +268,7 @@ filterAlignments(filter.summary = filt.summary,
 
 Parameter explanations: 
 
-```
+```r
 filter.summary: summary data file from filterSummary
 alignment.data: summary data file from alignmentSummary
 alignment.folder: folder of alignments to be filtered
@@ -334,8 +339,8 @@ multi.thread: TRUE to use Astral-MP multithreading
 memory: memory value to be passed to java. Should be in "Xg" format, X = an integer
 ```
 
-# Analyzing Filtered Datasets
 
+# 5) Testing effectiveness of filtering on anomaly zone
 
 1) Now that alignment and filtration statistics have been calculated and filtered ASTRAL-III trees have been estimated, this collection of data can be analyzed together. First the necessary directory paths can be put into character vectors:
 
@@ -404,6 +409,10 @@ input.dir: directory of concordance factor data generated from the filtered data
 clade.list: a named list of clades of interest to test for concordance factors
 outgroups: outgroups to root the tree
 ```
+
+
+# 6) Plot filtering anomaly zone results
+
 
 6) The results from the previous two functions can be summarized from the tables to find the best filtered tree, or plotted out using the plot.filterZone function. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis). In addition, the points will be colored by anomaly zone calculation presence/absence (az.colors parameter). setting dataset.name = "all" will plot all datasets together on the same plot (e.g. exons, introns, UCEs) so that the impact of filtration on concordance factors can be compared across different data types and sets of analyses. 
 
