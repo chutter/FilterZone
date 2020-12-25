@@ -508,7 +508,7 @@ m.shape: monophyly shape on the graph; circle = monophyletic; square paraphyleti
 min.trees: minimum number of trees to keep a filtration replicate. Default: 10
 ```
 
-![](/pics/filterzone-example.svg)
+![](/pics/filterzone_example.svg)
 
 
 2) This next function can summarize the filtration replicates support on a single node at a time. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis) for the given taxon group delimited at the start of the script. In addition, the points will be colored by anomaly zone calculation presence/absence (az.colors parameter). The shape (circle or square) represents whether the focal clade was monophyletic in that analysis (circle) or not (square).
@@ -546,7 +546,7 @@ m.shape: monophyly shape on the graph; circle = monophyletic; square paraphyleti
 min.trees: minimum number of trees to keep a filtration replicate. Default: 10
 ```
 
-![](/pics/filternode-example.svg)
+![](/pics/filternode_example.svg)
 
 
 
