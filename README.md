@@ -2,23 +2,27 @@
 
 R Package For Detecting the Anomaly and Erroneous Zones and Alignment Filtering in Large Phylogenomic Datasets
 
-This R package is for detecting the anomaly and erroneous zone and facilitating alignment and gene tree filtering of large phylogenomic datasets. 
+![](/pics/header-plot.svg)
 
-In extreme cases of ILS, it is possible that the most common gene tree topology will not match the true species tree, a phenomenon that has been termed “the anomaly zone”. For species trees in the anomaly zone, concatenation methods can provide strong support for the most common anomalous topology (i.e. anomalous gene trees: “AGTs”) while species tree methods can recover the correct species tree as ILS is into account. However, erroneous gene trees ("EGTs") has been shown to lead to erroneous species tree topologies when gene tree estimation error is high. Gene tree estimation error and EGTs leading to an incorrect species tree is termed the “erroneous zone”, which distinguishes species trees detected in the anomaly zone driven by AGTs resulting from ILS. Under the erroneous zone, EGTs resulting from non-biological properties of alignments (e.g. missing data, informative sites, alignment length) produces discordant EGTs from the true species tree, and filtering based on the informativeness of the alignments can lead to more robust species tree estimation. 
+This R package is for detecting the anomaly zone and facilitating alignment and gene tree filtering of large phylogenomic datasets. 
+
+In extreme cases of ILS, it is possible that the most common gene tree topology will not match the true species tree, a phenomenon that has been termed “the anomaly zone”. For species trees in the anomaly zone, concatenation methods can provide strong support for the most common anomalous topology (i.e. anomalous gene trees: “AGTs”) while species tree methods can recover the correct species tree as ILS is into account. However, erroneous gene trees ("EGTs") has been shown to lead to erroneous species tree topologies when gene tree estimation error is high. EGTs resulting from non-biological properties of alignments (e.g. missing data, informative sites, alignment length) produces discordant EGTs from the true species tree, and filtering based on the informativeness of the alignments can lead to more robust species tree estimation (Hutter and Duellman, in review). 
 
 Main features of the package:
-  1) Testing for anomaly and erroneous zones
+  1) Testing for anomaly zones
   2) Calculates comprehensive alignment statistics for a single or folder of alignments 
   3) Creates filtered datasets from alignment statistics (alignment length, informativeness, etc). Generates filtered datasets for:
       - Alignments (concatenated or a folder)
       - Gene trees (using the alignment statistics)
   4) Assess your filtration results through concordance factors (Minh et al. 2020) directly from R (iqtree2 program required)
-  5) Plot your filtration concordance factor and anomaly/erroneous zone results
+  5) Plot your filtration concordance factor and anomaly zone results
 
 This package is still in beta testing phase, and more features and expanded functionality will be added in the future. If you find any issues with something not working, or you would like features to be added, go to issues in the top menu bar and submit them. 
 
 
 # Citation
+
+Publication is in review. Hutter and Duellman, in review. 
 
 For now, you can cite the R package by linking to this GitHub if you use it. 
 
