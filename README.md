@@ -166,6 +166,9 @@ tip.label.size = size of the tip labels, passed to the cex function of ape::plot
 node.label.size = size of the node labels, passed to the cex function of ape::nodelabels
 ```
 
+![](/pics/az-example-plot.pdf)
+
+
 
 # 4) Alignment and genetree dataset filtration 
 
