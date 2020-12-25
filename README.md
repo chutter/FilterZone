@@ -174,7 +174,7 @@ node.label.size = size of the node labels, passed to the cex function of ape::no
 
 ## 4) Alignment and genetree dataset filtration 
 
-The anomaly zone occurs when there are extreme cases of ILS and the most common gene tree topology does not match the true species tree. Species tree methods are designed to take into account ILS, however, they were not designed to take gene tree estimation error into account. A recent study this package was designed for dubbed the "erroneous zone", where common gene tree estimation error can estimate an incorrect species tree while concatenation provides the correct topology (Hutter & Duellman, in review). The erroneous zone can be detected and avoided through extensive filtration of the alignments and resulting gene trees prior to phylogeny estimation using concatenation and summary species tree method. If the species tree is within the erroneous zone, after filtration of EGTs the anomaly zone will not be detected; however, under ILS AGTs are expected to occur randomly and filtration would have no impact on the detection of the anomaly zone. The results of this study are critically important to systematists, because it could provide clarity on why species tree methods provide different results than concatenation methods. 
+The anomaly zone occurs when there are extreme cases of ILS and the most common gene tree topology does not match the true species tree. Species tree methods are designed to take into account ILS, however, they were not designed to take gene tree estimation error into account. The publication that introduces this R package shows that filtering of gene trees based on features of the alignment can result in better supported species trees and less gene tree species discordance. Importantly, filtering can aid in removing anomaly zones from species trees. 
 
 1) To begin, you will first need a folder of alignments in phylip format and a folder of gene trees from IQTREE (other programs will probably work; if not, let me know and I can add them in). Create your working directory first (or use an existing directory). tree.files and align.files link to the gene tree files and alignments that estimated them. The names must match between the genes and alignments (except for the file extension). 
 
@@ -200,10 +200,11 @@ filter.count.pis = c(10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500) #count
 
 
 ```r
-#Estimated run time: 30 minutes
-align.summary = summarizeAlignments(alignment.path = align.dir,
+#Estimated run time: 10 minutes
+align.summary = summarizeAlignments(alignment.path = align.files,
                                     file.export = "alignment_stats",
-                                    alignment.type = "phylip")
+                                    alignment.type = "phylip",
+                                    dataset.name = "exons")
 ```
 
 Parameter explanations: 
@@ -213,7 +214,7 @@ alignment.path: path to a folder of multiple sequence alignments in phylip forma
 file.export: if a name is provided, the table is saved to file
 overwrite: if TRUE overwrites file if it exists; FALSE the dataset is skipped
 dataset.name: a unique name for your dataset. i.e. exons, introns, UCEs
-alignment.type: select the format of the alignment. Phylip is avaialble for now, will be expanded in the future.
+alignment.type: select the format of the alignment. Phylip is avaialble, will be expanded in the future.
 ```
 
 The summary table created by the function has the following columns: 
@@ -292,10 +293,8 @@ filterGeneTrees(filter.summary = filt.summary,
                 genetree.folder = tree.dir,
                 format = "concatenated",
                 overwrite = TRUE,
-                taxa.remove = NULL,
                 min.trees = 5,
                 min.n.samples = 4,
-                min.sample.prop = NULL,
                 make.polytomy = TRUE,
                 polytomy.limit = 10,
                 remove.node.labels = FALSE)
@@ -318,7 +317,7 @@ polytomy.limit: the value at which to collapse a node into a polytomy
 remove.node.labels: strips trees of node labels if downstream analyses give you trouble (not recommended)
 ```
 
-7) Finally, the concatenated gene tree dataset can be provided to the astralRunner function, which runs ASTRAL-III for each concatenated set of gene trees from each filtered dataset in the "filtered-genetrees-concatenated" folder. Each summary species tree is saved in the output.dir. 
+7) To run the new filtered sets of gene trees through ASTRAL-III efficiently, the AstralPlane package function astralRunner can be used on a folder of concateanted gene trees. the concatenated gene tree dataset can be provided to the astralRunner function, which runs ASTRAL-III for each concatenated set of gene trees from each filtered dataset in the "filtered-genetrees-concatenated" folder. Each summary species tree is saved in the output.dir. 
 
 ```r
 #Estimated run time: hours, depending on how many filters selected
@@ -327,7 +326,7 @@ AstralPlane::astralRunner(concat.genetree.folder = "filtered-genetrees-concatena
                           overwrite = TRUE,
                           astral.path = astral.path,
                           astral.t = 2,
-                          quiet = FALSE,
+                          quiet = TRUE,
                           multi.thread = TRUE,
                           memory = "8g")               
 ```
@@ -343,6 +342,32 @@ astral.t: the ASTRAL-III "t" parameter for different annotations, t = 2 is all a
 quiet: TRUE hides the screen output from astral
 multi.thread: TRUE to use Astral-MP multithreading 
 memory: memory value to be passed to java. Should be in "Xg" format, X = an integer
+```
+
+8) Finally, concordance factors from IQTREE 2 can be computed on the species tree using the filtered gene trees, filtered alignments, and their corresponding species trees. The concordance factors for sites and genes will computed for every node in every filtered replicate, and these results can be plotted in the next section to display how filtering affects concordance factors across the entire tree or a focal node. 
+
+```r
+AstralPlane::concordanceRunner(alignment.dir = "filtered-alignments-concatenated",
+                               species.tree.dir = "filtered-Astral",
+                               genetree.dir = "filtered-genetrees-concatenated",
+                               output.dir = "concordance-factors",
+                               iqtree.path = "iqtree2",
+                               overwrite = TRUE,
+                               quiet = TRUE,
+                               threads  = 6)         
+```
+
+Parameter explanations: 
+
+```
+alignment.dir: The alignment folder from which the stats were calculated from in alignment.data
+species.tree.dir = output directory from previous step that contains filtered ASTRAL-III species trees
+genetree.dir: a folder of genetree files that are concatenated
+output.dir: the output directory name to save the concordance factors results from filtration replicates
+iqtree.path: path to IQTREE 2 if R cannot find it
+overwrite: overwrite = TRUE to overwrite existing files
+quiet: TRUE hides the screen output from astral
+threads: the number of threads to used, passed to IQTREE
 ```
 
 
