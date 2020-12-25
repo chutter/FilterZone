@@ -27,7 +27,7 @@ For now, you can cite the R package by linking to this GitHub if you use it.
 
 1) Installation
 2) Setting up R environment
-3) Testing the anomaly zone
+3) Detecting the anomaly zone
 4) Alignment and genetree dataset filtration 
 5) Testing effectiveness of filtering on anomaly zone
 6) Plot filtering anomaly zone results
@@ -51,7 +51,7 @@ The package has two additional R package dependencies, which are treated as impo
   
 To install FilterZone, you can use the R package devtools. Here are step-by-step instructions for installation:
 
-1) Install devtools by typing in your R console: install.packages("devtools")
+1) Install devtools by typing in your R console: install.packages("devtools", dependencies = T)
 
 2) Install AstralPlane by typing in your R console: devtools::install_github("chutter/AstralPlane")
 
@@ -59,7 +59,7 @@ To install FilterZone, you can use the R package devtools. Here are step-by-step
 
 4) Install FilterZone by typing in your R console: devtools::install_github("chutter/FilterZone"), and repeat Step 3. 
 
-5) Devtools should finish and say the packages loaded properly. Load the package with library(AstralPlane) and library(FilterZone). 
+5) Devtools should finish and say the packages loaded properly. Load the packages with library(AstralPlane), library(FilterZone), and library(data.table). 
 
 And installation should be complete. 
 
@@ -69,7 +69,7 @@ And installation should be complete.
 
 I have included an R script in the main repository with some examples. It is also described here in detail. 
 
-1) first install and load the R package. Its a good idea to install new (or check) every time as this package is being updated frequently. 
+1) first install and load the R package. Its a good idea to install new (or check) every time as this package is being updated frequently. Functions may also be modified and stop working, so check back here for updated tutorial instructions. 
 
 ```r
 devtools::install_github("chutter/AstralPlane")
@@ -77,6 +77,7 @@ library(AstralPlane)
 
 devtools::install_github("chutter/FilterZone")
 library(FilterZone)
+library(data.table)
 
 ```
 
@@ -97,9 +98,9 @@ setwd(work.dir)
 ```
 
 
-# 3) Testing the anomaly zone
+# 3) Detecting the anomaly zone
 
-1) To test the anomaly zone, you need a species tree estimated with coalescent branch lengths, where ASTRAL-III will provide this for you. As input into ASTRAL-III, you will need gene trees estimated separately for each alignment marker in your dataset. The R package AstralPlane provides some R functions that will streamline your data analysis pipeline:
+1) To detect the anomaly zone, you need a species tree estimated with coalescent branch lengths, where ASTRAL-III will provide this for you. As input into ASTRAL-III, you will need gene trees estimated separately for each alignment marker in your dataset. The R package AstralPlane provides some R functions that will streamline your data analysis pipeline:
   a. alignment and gene concatenation
   b. Within gene tree filtering (collapsing nodes with low support, taxa removal)
   c. Prepare gene trees for input into ASTRAL-III
@@ -108,12 +109,12 @@ setwd(work.dir)
 
 Instructions can be found here: https://github.com/chutter/AstralPlane
 
-Once you have a species tree, you can import this species tree into R. 
+Once you have a species tree through AstralPlane or on your own, you can import this species tree into R. 
 
 2) Create a set of character variables with the path to your tree file. Also indicate your outgroups for rooting the tree. Finally, the save.name is the desired output save name. 
 
 ```r
-tree.file = "/Trees/UCEs.tre"
+tree.file.path = "/Trees/test-tree.tre"
 outgroups = c("Species_A", "Species_B")
 save.name = "test-dataset"
 ```
@@ -122,15 +123,15 @@ save.name = "test-dataset"
 
 
 ```r
-uce.tree = ape::read.tree(tree.file)
-anom.data = anomalyZone(tree = uce.tree,
+test.tree = ape::read.tree(tree.file.path)
+anom.data = anomalyZone(tree = test.tree,
                         outgroups = outgroup.taxa)
 ```
 
-Alternatively,
+Alternatively, to read the file in directly from a file path:
 
 ```r
-anom.data = anomalyZone(tree = tree.file,
+anom.data = anomalyZone(tree = tree.file.path,
                         outgroups = outgroup.taxa)
 ```
 
