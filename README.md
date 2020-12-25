@@ -209,7 +209,7 @@ align.summary = summarizeAlignments(alignment.path = align.files,
 
 Parameter explanations: 
 
-```
+```r
 alignment.path: path to a folder of multiple sequence alignments in phylip format
 file.export: if a name is provided, the table is saved to file
 overwrite: if TRUE overwrites file if it exists; FALSE the dataset is skipped
@@ -302,7 +302,7 @@ filterGeneTrees(filter.summary = filt.summary,
 
 Parameter explanations: 
 
-```
+```r
 filter.summary: summary data file from filterSummary
 alignment.data: summary data file from alignmentSummary
 genetree.folder: your target folder of gene trees that correspond to the alignments being filtered
@@ -333,7 +333,7 @@ AstralPlane::astralRunner(concat.genetree.folder = "filtered-genetrees-concatena
 
 Parameter explanations: 
 
-```
+```r
 concat.genetree.folder: a folder of genetree files that are concatenated.
 output.dir: the output directory name for the astral file
 overwrite: overwrite = TRUE to overwrite existing files
@@ -359,7 +359,7 @@ AstralPlane::concordanceRunner(alignment.dir = "filtered-alignments-concatenated
 
 Parameter explanations: 
 
-```
+```r
 alignment.dir: The alignment folder from which the stats were calculated from in alignment.data
 species.tree.dir = output directory from previous step that contains filtered ASTRAL-III species trees
 genetree.dir: a folder of genetree files that are concatenated
@@ -417,7 +417,7 @@ anomaly.data = filterAnomalies(astral.directory = astral.dir,
 
 Parameter explanations: 
 
-```
+```r
 astral.directory: directory of filtered astral results
 outgroups: outgroups to root your tree
 filter.data: your master filtered dataset summary stats
@@ -435,10 +435,40 @@ concord.data = filterConcordance(input.dir = "concordance-factors",
 
 Parameter explanations: 
 
-```
+```r
 input.dir: directory of concordance factor data generated from the filtered datasets
 clade.list: a named list of clades of interest to test for concordance factors
 outgroups: outgroups to root the tree
+```
+
+6) Finally, with the "bestFilterTrees" function, the optimal single or multiple best trees from the filtration replications can be saved separately to file for use in publications and for other analyses. 
+
+```r
+#### Pull out best tree
+bestFilterTrees(anomaly.zone.data = anomaly.data,
+                concordance.factors.data = concord.data,
+                output.dir = "best-trees",
+                min.trees = 20,
+                fewest.anomaly.zones = TRUE,
+                highest.gene.cf = TRUE,
+                highest.post.prob = TRUE,
+                all.datasets = TRUE,
+                top.best = 1)
+```
+
+Parameter explanations: 
+
+```r
+anomaly.zone.data: table output from the filterAnomalies function
+concordance.factors.data:  table output from the filterConcordance function
+output.dir: the name of the output directory to save the plots if TRUE above
+single.best: saves a pdf of the single best tree
+top.best: saves the top five best trees
+all.datasets: TRUE for top five for each datasets FALSE for top five across all datasets
+fewest.anomaly.zones: TRUE to return the trees with the fewest anomaly zones
+highest.post.prob: TRUE to return the trees with the highest mean posterior probability
+highest.gene.cf: TRUE to return the trees with the highest mean gene concordance factors
+min.trees: minimum number of trees to keep a filtration replicate. Default: 10
 ```
 
 
@@ -465,7 +495,7 @@ plot.filterZone(anomaly.zone.data = anomaly.data,
 
 Parameter explanations: 
 
-```
+```r
 anomaly.zone.data: table output from the filterAnomalies function
 concordance.factors.data: table output from the filterConcordance function
 save.plots: if you wish to save to file select TRUE
@@ -500,7 +530,7 @@ plot.filterNode(anomaly.zone.data = anomaly.data,
 
 Parameter explanations: 
 
-```
+```r
 anomaly.zone.data: table output from the filterAnomalies function
 concordance.factors.data: table output from the filterConcordance function
 save.plots: if you wish to save to file select TRUE
