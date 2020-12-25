@@ -1,24 +1,27 @@
 # FilterZone
 
-R Package For Detecting the Anomaly and Erroneous Zones and Alignment Filtering in Large Phylogenomic Datasets
+## R Package For Detecting the Anomaly Zone and Dataset Filtering in Phylogenomics
 
-This R package is for detecting the anomaly and erroneous zone and facilitating alignment and gene tree filtering of large phylogenomic datasets. 
+![](/pics/header-plot.svg)
 
-In extreme cases of ILS, it is possible that the most common gene tree topology will not match the true species tree, a phenomenon that has been termed “the anomaly zone”. For species trees in the anomaly zone, concatenation methods can provide strong support for the most common anomalous topology (i.e. anomalous gene trees: “AGTs”) while species tree methods can recover the correct species tree as ILS is into account. However, erroneous gene trees ("EGTs") has been shown to lead to erroneous species tree topologies when gene tree estimation error is high. Gene tree estimation error and EGTs leading to an incorrect species tree is termed the “erroneous zone”, which distinguishes species trees detected in the anomaly zone driven by AGTs resulting from ILS. Under the erroneous zone, EGTs resulting from non-biological properties of alignments (e.g. missing data, informative sites, alignment length) produces discordant EGTs from the true species tree, and filtering based on the informativeness of the alignments can lead to more robust species tree estimation. 
+
+In extreme cases of incomplete lineage sorting (ILS), it is possible that the most common gene tree topology will not match the true species tree, a phenomenon that has been termed “the anomaly zone”. For species trees in the anomaly zone, concatenation methods can provide strong support for the most common anomalous topology (i.e. anomalous gene trees: “AGTs”) while species tree methods can recover the correct species tree as ILS is into account. However, erroneous gene trees ("EGTs") has been shown to lead to erroneous species tree topologies when gene tree estimation error is high. EGTs resulting from non-biological properties of alignments (e.g. missing data, informative sites, alignment length) produces discordant EGTs from the true species tree, and filtering based on the informativeness of the alignments can lead to more robust species tree estimation (Hutter and Duellman, in review). 
 
 Main features of the package:
-  1) Testing for anomaly and erroneous zones
+  1) Testing for anomaly zones
   2) Calculates comprehensive alignment statistics for a single or folder of alignments 
   3) Creates filtered datasets from alignment statistics (alignment length, informativeness, etc). Generates filtered datasets for:
       - Alignments (concatenated or a folder)
       - Gene trees (using the alignment statistics)
   4) Assess your filtration results through concordance factors (Minh et al. 2020) directly from R (iqtree2 program required)
-  5) Plot your filtration concordance factor and anomaly/erroneous zone results
+  5) Plot your filtration concordance factor and anomaly zone results
 
 This package is still in beta testing phase, and more features and expanded functionality will be added in the future. If you find any issues with something not working, or you would like features to be added, go to issues in the top menu bar and submit them. 
 
 
 # Citation
+
+Publication is in review. Hutter and Duellman, in review. 
 
 For now, you can cite the R package by linking to this GitHub if you use it. 
 
@@ -33,7 +36,7 @@ For now, you can cite the R package by linking to this GitHub if you use it.
 6) Plot filtering anomaly zone results
 
 
-# 1) Installation
+## 1) Installation
 
 For the full analysis pipeline, the following programs are needed:
   1) ASTRAL-III is available on GitHub here: https://github.com/smirarab/ASTRAL
@@ -65,7 +68,7 @@ And installation should be complete.
 
 
 
-# 2) Setting up R environment
+## 2) Setting up R environment
 
 I have included an R script in the main repository with some examples. It is also described here in detail. 
 
@@ -98,7 +101,7 @@ setwd(work.dir)
 ```
 
 
-# 3) Detecting the anomaly zone
+## 3) Detecting the anomaly zone
 
 1) To detect the anomaly zone, you need a species tree estimated with coalescent branch lengths, where ASTRAL-III will provide this for you. As input into ASTRAL-III, you will need gene trees estimated separately for each alignment marker in your dataset. The R package AstralPlane provides some R functions that will streamline your data analysis pipeline:
   a. alignment and gene concatenation
@@ -169,9 +172,9 @@ node.label.size = size of the node labels, passed to the cex function of ape::no
 ![](/pics/az-example-plot.svg)
 
 
-# 4) Alignment and genetree dataset filtration 
+## 4) Alignment and genetree dataset filtration 
 
-The anomaly zone occurs when there are extreme cases of ILS and the most common gene tree topology does not match the true species tree. Species tree methods are designed to take into account ILS, however, they were not designed to take gene tree estimation error into account. A recent study this package was designed for dubbed the "erroneous zone", where common gene tree estimation error can estimate an incorrect species tree while concatenation provides the correct topology (Hutter & Duellman, in review). The erroneous zone can be detected and avoided through extensive filtration of the alignments and resulting gene trees prior to phylogeny estimation using concatenation and summary species tree method. If the species tree is within the erroneous zone, after filtration of EGTs the anomaly zone will not be detected; however, under ILS AGTs are expected to occur randomly and filtration would have no impact on the detection of the anomaly zone. The results of this study are critically important to systematists, because it could provide clarity on why species tree methods provide different results than concatenation methods. 
+The anomaly zone occurs when there are extreme cases of ILS and the most common gene tree topology does not match the true species tree. Species tree methods are designed to take into account ILS, however, they were not designed to take gene tree estimation error into account. The publication that introduces this R package shows that filtering of gene trees based on features of the alignment can result in better supported species trees and less gene tree species discordance. Importantly, filtering can aid in removing anomaly zones from species trees. 
 
 1) To begin, you will first need a folder of alignments in phylip format and a folder of gene trees from IQTREE (other programs will probably work; if not, let me know and I can add them in). Create your working directory first (or use an existing directory). tree.files and align.files link to the gene tree files and alignments that estimated them. The names must match between the genes and alignments (except for the file extension). 
 
@@ -197,20 +200,21 @@ filter.count.pis = c(10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500) #count
 
 
 ```r
-#Estimated run time: 30 minutes
-align.summary = summarizeAlignments(alignment.path = align.dir,
+#Estimated run time: 10 minutes
+align.summary = summarizeAlignments(alignment.path = align.files,
                                     file.export = "alignment_stats",
-                                    alignment.type = "phylip")
+                                    alignment.type = "phylip",
+                                    dataset.name = "exons")
 ```
 
 Parameter explanations: 
 
-```
+```r
 alignment.path: path to a folder of multiple sequence alignments in phylip format
 file.export: if a name is provided, the table is saved to file
 overwrite: if TRUE overwrites file if it exists; FALSE the dataset is skipped
 dataset.name: a unique name for your dataset. i.e. exons, introns, UCEs
-alignment.type: select the format of the alignment. Phylip is avaialble for now, will be expanded in the future.
+alignment.type: select the format of the alignment. Phylip is avaialble, will be expanded in the future.
 ```
 
 The summary table created by the function has the following columns: 
@@ -289,10 +293,8 @@ filterGeneTrees(filter.summary = filt.summary,
                 genetree.folder = tree.dir,
                 format = "concatenated",
                 overwrite = TRUE,
-                taxa.remove = NULL,
                 min.trees = 5,
                 min.n.samples = 4,
-                min.sample.prop = NULL,
                 make.polytomy = TRUE,
                 polytomy.limit = 10,
                 remove.node.labels = FALSE)
@@ -300,7 +302,7 @@ filterGeneTrees(filter.summary = filt.summary,
 
 Parameter explanations: 
 
-```
+```r
 filter.summary: summary data file from filterSummary
 alignment.data: summary data file from alignmentSummary
 genetree.folder: your target folder of gene trees that correspond to the alignments being filtered
@@ -315,7 +317,7 @@ polytomy.limit: the value at which to collapse a node into a polytomy
 remove.node.labels: strips trees of node labels if downstream analyses give you trouble (not recommended)
 ```
 
-7) Finally, the concatenated gene tree dataset can be provided to the astralRunner function, which runs ASTRAL-III for each concatenated set of gene trees from each filtered dataset in the "filtered-genetrees-concatenated" folder. Each summary species tree is saved in the output.dir. 
+7) To run the new filtered sets of gene trees through ASTRAL-III efficiently, the AstralPlane package function astralRunner can be used on a folder of concateanted gene trees. the concatenated gene tree dataset can be provided to the astralRunner function, which runs ASTRAL-III for each concatenated set of gene trees from each filtered dataset in the "filtered-genetrees-concatenated" folder. Each summary species tree is saved in the output.dir. 
 
 ```r
 #Estimated run time: hours, depending on how many filters selected
@@ -324,14 +326,14 @@ AstralPlane::astralRunner(concat.genetree.folder = "filtered-genetrees-concatena
                           overwrite = TRUE,
                           astral.path = astral.path,
                           astral.t = 2,
-                          quiet = FALSE,
+                          quiet = TRUE,
                           multi.thread = TRUE,
                           memory = "8g")               
 ```
 
 Parameter explanations: 
 
-```
+```r
 concat.genetree.folder: a folder of genetree files that are concatenated.
 output.dir: the output directory name for the astral file
 overwrite: overwrite = TRUE to overwrite existing files
@@ -342,8 +344,34 @@ multi.thread: TRUE to use Astral-MP multithreading
 memory: memory value to be passed to java. Should be in "Xg" format, X = an integer
 ```
 
+8) Finally, concordance factors from IQTREE 2 can be computed on the species tree using the filtered gene trees, filtered alignments, and their corresponding species trees. The concordance factors for sites and genes will computed for every node in every filtered replicate, and these results can be plotted in the next section to display how filtering affects concordance factors across the entire tree or a focal node. 
 
-# 5) Testing effectiveness of filtering on anomaly zone
+```r
+AstralPlane::concordanceRunner(alignment.dir = "filtered-alignments-concatenated",
+                               species.tree.dir = "filtered-Astral",
+                               genetree.dir = "filtered-genetrees-concatenated",
+                               output.dir = "concordance-factors",
+                               iqtree.path = "iqtree2",
+                               overwrite = TRUE,
+                               quiet = TRUE,
+                               threads  = 6)         
+```
+
+Parameter explanations: 
+
+```r
+alignment.dir: The alignment folder from which the stats were calculated from in alignment.data
+species.tree.dir = output directory from previous step that contains filtered ASTRAL-III species trees
+genetree.dir: a folder of genetree files that are concatenated
+output.dir: the output directory name to save the concordance factors results from filtration replicates
+iqtree.path: path to IQTREE 2 if R cannot find it
+overwrite: overwrite = TRUE to overwrite existing files
+quiet: TRUE hides the screen output from astral
+threads: the number of threads to used, passed to IQTREE
+```
+
+
+## 5) Testing effectiveness of filtering on anomaly zone
 
 1) Now that alignment and filtration statistics have been calculated and filtered ASTRAL-III trees have been estimated, this collection of data can be analyzed together. First the necessary directory paths can be put into character vectors:
 
@@ -389,7 +417,7 @@ anomaly.data = filterAnomalies(astral.directory = astral.dir,
 
 Parameter explanations: 
 
-```
+```r
 astral.directory: directory of filtered astral results
 outgroups: outgroups to root your tree
 filter.data: your master filtered dataset summary stats
@@ -407,21 +435,50 @@ concord.data = filterConcordance(input.dir = "concordance-factors",
 
 Parameter explanations: 
 
-```
+```r
 input.dir: directory of concordance factor data generated from the filtered datasets
 clade.list: a named list of clades of interest to test for concordance factors
 outgroups: outgroups to root the tree
 ```
 
+6) Finally, with the "bestFilterTrees" function, the optimal single or multiple best trees from the filtration replications can be saved separately to file for use in publications and for other analyses. 
 
-# 6) Plot filtering anomaly zone results
+```r
+#### Pull out best tree
+bestFilterTrees(anomaly.zone.data = anomaly.data,
+                concordance.factors.data = concord.data,
+                output.dir = "best-trees",
+                min.trees = 20,
+                fewest.anomaly.zones = TRUE,
+                highest.gene.cf = TRUE,
+                highest.post.prob = TRUE,
+                all.datasets = TRUE,
+                top.best = 1)
+```
+
+Parameter explanations: 
+
+```r
+anomaly.zone.data: table output from the filterAnomalies function
+concordance.factors.data:  table output from the filterConcordance function
+output.dir: the name of the output directory to save the plots if TRUE above
+single.best: saves a pdf of the single best tree
+top.best: saves the top five best trees
+all.datasets: TRUE for top five for each datasets FALSE for top five across all datasets
+fewest.anomaly.zones: TRUE to return the trees with the fewest anomaly zones
+highest.post.prob: TRUE to return the trees with the highest mean posterior probability
+highest.gene.cf: TRUE to return the trees with the highest mean gene concordance factors
+min.trees: minimum number of trees to keep a filtration replicate. Default: 10
+```
 
 
-6) The results from the previous two functions can be summarized from the tables to find the best filtered tree, or plotted out using the plot.filterZone function. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis). In addition, the points will be colored by anomaly zone calculation presence/absence (az.colors parameter). setting dataset.name = "all" will plot all datasets together on the same plot (e.g. exons, introns, UCEs) so that the impact of filtration on concordance factors can be compared across different data types and sets of analyses. 
+## 6) Plot filtering anomaly zone results
+
+
+1) The results from the previous two functions can be summarized from the tables to find the best filtered tree, or plotted out using the plot.filterZone function. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis). In addition, the points will be colored by anomaly zone calculation presence/absence (az.colors parameter). setting dataset.name = "all" will plot all datasets together on the same plot (e.g. exons, introns, UCEs) so that the impact of filtration on concordance factors can be compared across different data types and sets of analyses. 
 
 
 ```r
-#Estimated run time: 1 second
 plot.filterZone(anomaly.zone.data = anomaly.data,
                 concordance.factors.data = concord.data,
                 save.plots = TRUE,
@@ -437,7 +494,7 @@ plot.filterZone(anomaly.zone.data = anomaly.data,
 
 Parameter explanations: 
 
-```
+```r
 anomaly.zone.data: table output from the filterAnomalies function
 concordance.factors.data: table output from the filterConcordance function
 save.plots: if you wish to save to file select TRUE
@@ -451,11 +508,13 @@ m.shape: monophyly shape on the graph; circle = monophyletic; square paraphyleti
 min.trees: minimum number of trees to keep a filtration replicate. Default: 10
 ```
 
-7) This next function can summarize the filtration replicates support on a single node at a time. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis) for the given taxon group delimited at the start of the script. In addition, the points will be colored by anomaly zone calculation presence/absence (az.colors parameter). The shape (circle or square) represents whether the focal clade was monophyletic in that analysis (circle) or not (square).
+![](/pics/filterzone-example.svg)
+
+
+2) This next function can summarize the filtration replicates support on a single node at a time. This function will plot the gCF or sCF (on the y axis) for each filtration replicate (on the x axis) for the given taxon group delimited at the start of the script. In addition, the points will be colored by anomaly zone calculation presence/absence (az.colors parameter). The shape (circle or square) represents whether the focal clade was monophyletic in that analysis (circle) or not (square).
 
 
 ```r
-#Estimated run time: 1 second
 plot.filterNode(anomaly.zone.data = anomaly.data,
                 concordance.factors.data = concord.data,
                 output.dir = "Filter-Plots",
@@ -472,7 +531,7 @@ plot.filterNode(anomaly.zone.data = anomaly.data,
 
 Parameter explanations: 
 
-```
+```r
 anomaly.zone.data: table output from the filterAnomalies function
 concordance.factors.data: table output from the filterConcordance function
 save.plots: if you wish to save to file select TRUE
@@ -487,6 +546,7 @@ m.shape: monophyly shape on the graph; circle = monophyletic; square paraphyleti
 min.trees: minimum number of trees to keep a filtration replicate. Default: 10
 ```
 
+![](/pics/filternode-example.svg)
 
 
 
